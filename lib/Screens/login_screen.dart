@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/Screens/main_page.dart';
+import 'package:smarttimetable/Screens/signup_screen.dart';
+import 'major_courses_screen.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key); // const 생성자 추가
@@ -70,12 +73,20 @@ class ForgotPassword extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('아이디 찾기', style: TextStyle(color: Colors.blue)),
-        Text('비밀번호 찾기', style: TextStyle(color: Colors.blue)),
-        Text('회원가입', style: TextStyle(color: Colors.blue)),
+        const Text('아이디 찾기', style: TextStyle(color: Colors.blue)),
+        const Text('비밀번호 찾기', style: TextStyle(color: Colors.blue)),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SignUpPage()),
+            );
+          },
+          child: const Text('회원가입', style: TextStyle(color: Colors.blue)),
+        ),
       ],
     );
   }
@@ -91,6 +102,8 @@ class LoginButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           // 로그인 버튼 클릭 시 동작
+          Navigator.push(context,
+              MaterialPageRoute(builder: (content) => TimetableScreen()));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.orange,
