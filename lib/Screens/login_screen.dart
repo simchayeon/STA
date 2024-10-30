@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/main_page.dart';
 import 'package:smarttimetable/Screens/signup_screen.dart';
 import 'major_courses_screen.dart';
+import 'find_id_screen.dart';
+import 'find_password_screen.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key); // const 생성자 추가
@@ -76,8 +78,28 @@ class ForgotPassword extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('아이디 찾기', style: TextStyle(color: Colors.blue)),
-        const Text('비밀번호 찾기', style: TextStyle(color: Colors.blue)),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FindIDScreen()),
+            );
+          },
+          child: const Text(
+            '아이디 찾기',
+            style: TextStyle(color: Colors.blue),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            // 비밀번호 찾기 페이지로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FindPasswordScreen()),
+            );
+          },
+          child: const Text('비밀번호 찾기', style: TextStyle(color: Colors.blue)),
+        ),
         GestureDetector(
           onTap: () {
             Navigator.push(
