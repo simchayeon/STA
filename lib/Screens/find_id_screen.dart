@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/login_screen.dart';
 
 class FindIDScreen extends StatefulWidget {
+  const FindIDScreen({super.key});
+
   @override
   _FindIDScreenState createState() => _FindIDScreenState();
 }
@@ -42,7 +44,7 @@ class _FindIDScreenState extends State<FindIDScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ID 찾기'),
+        title: const Text('ID 찾기'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -52,9 +54,9 @@ class _FindIDScreenState extends State<FindIDScreen> {
             Column(
               children: [
                 // 학번 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '학번',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -66,12 +68,12 @@ class _FindIDScreenState extends State<FindIDScreen> {
                     hintText: '학번을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 이름 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '이름',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -83,12 +85,12 @@ class _FindIDScreenState extends State<FindIDScreen> {
                     hintText: '이름을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 이메일 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '이메일',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -100,23 +102,23 @@ class _FindIDScreenState extends State<FindIDScreen> {
                     hintText: '이메일을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 오류 메시지 표시
                 if (_message.isNotEmpty)
                   Text(
                     _message,
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 아이디 표시
                 if (_showLoginButton) // ID 표시
                   Text(
                     '당신의 ID는 $_userId 입니다.',
-                    style: TextStyle(fontSize: 18, color: Colors.green),
+                    style: const TextStyle(fontSize: 18, color: Colors.green),
                   ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
               ],
             ),
 
@@ -148,7 +150,7 @@ class _FindIDScreenState extends State<FindIDScreen> {
                   ),
                 ),
               ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
 

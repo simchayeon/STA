@@ -1,45 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:smarttimetable/Screens/main_page.dart';
-import 'package:smarttimetable/Screens/signup_screen.dart';
+import 'package:smarttimetable/controllers/login_controller.dart';
+import 'package:smarttimetable/models/user_model.dart';
+import 'main_page.dart';
+import 'signup_screen.dart';
 import 'major_courses_screen.dart';
 import 'find_id_screen.dart';
 import 'find_password_screen.dart';
 
+// 로그인 화면을 나타내는 StatelessWidget 클래스
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key); // const 생성자 추가
+  LoginPage({super.key}); // const 생성자 추가
+
+  final LoginController _loginController =
+      LoginController(); // 로그인 컨트롤러 인스턴스 생성
 
   @override
   Widget build(BuildContext context) {
+    // ID와 비밀번호 입력을 위한 텍스트 필드 컨트롤러
+    final TextEditingController idController =
+        TextEditingController(); // ID 입력 필드
+    final TextEditingController passwordController =
+        TextEditingController(); // 비밀번호 입력 필드
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로그인'),
-        backgroundColor: Colors.orange,
+        title: const Text('로그인'), // 앱 바 제목
+        backgroundColor: Colors.orange, // 앱 바 색상
       ),
-      body: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0), // 좌우 패딩
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center, // 중심 정렬
           children: [
-            Logo(),
-            SizedBox(height: 20),
+            const Logo(), // 로고 위젯
+            const SizedBox(height: 20), // 위젯 간 간격
             TextField(
-              decoration: InputDecoration(
-                labelText: 'ID',
-                border: OutlineInputBorder(),
+              controller: idController, // ID 필드에 텍스트 컨트롤러 연결
+              decoration: const InputDecoration(
+                labelText: 'ID', // 라벨 텍스트
+                border: OutlineInputBorder(), // 테두리 스타일
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16), // 위젯 간 간격
             TextField(
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+              controller: passwordController, // 비밀번호 필드에 텍스트 컨트롤러 연결
+              decoration: const InputDecoration(
+                labelText: 'Password', // 라벨 텍스트
+                border: OutlineInputBorder(), // 테두리 스타일
               ),
-              obscureText: true,
+              obscureText: true, // 비밀번호 입력 시 텍스트 숨김
             ),
-            SizedBox(height: 16),
-            ForgotPassword(),
-            SizedBox(height: 20),
-            LoginButton(),
+            const SizedBox(height: 16), // 위젯 간 간격
+            const ForgotPassword(), // 비밀번호 찾기 및 회원가입 링크
+            const SizedBox(height: 20), // 위젯 간 간격
+            LoginButton(
+              onPressed: () {
+                // 로그인 버튼 클릭 시 User 모델 생성 및 로그인 수행
+                User user = User(
+                  id: idController.text, // ID 입력 필드에서 텍스트 가져오기
+                  password: passwordController.text, // 비밀번호 입력 필드에서 텍스트 가져오기
+                );
+                _loginController.login(user, context); // 로그인 로직 호출
+              },
+            ),
           ],
         ),
       ),
@@ -48,7 +71,7 @@ class LoginPage extends StatelessWidget {
 }
 
 class Logo extends StatelessWidget {
-  const Logo({Key? key}) : super(key: key); // 'key'를 부모 클래스에 전달
+  const Logo({super.key}); // 'key'를 부모 클래스에 전달
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +94,7 @@ class Logo extends StatelessWidget {
 }
 
 class ForgotPassword extends StatelessWidget {
-  const ForgotPassword({Key? key}) : super(key: key); // 'key'를 부모 클래스에 전달
+  const ForgotPassword({super.key}); // 'key'를 부모 클래스에 전달
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +105,7 @@ class ForgotPassword extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => FindIDScreen()),
+              MaterialPageRoute(builder: (context) => const FindIDScreen()),
             );
           },
           child: const Text(
@@ -104,7 +127,7 @@ class ForgotPassword extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SignUpPage()),
+              MaterialPageRoute(builder: (context) => const SignUpPage()),
             );
           },
           child: const Text('회원가입', style: TextStyle(color: Colors.blue)),
@@ -115,28 +138,26 @@ class ForgotPassword extends StatelessWidget {
 }
 
 class LoginButton extends StatelessWidget {
-  const LoginButton({Key? key}) : super(key: key); // 'key'를 부모 클래스에 전달
+  final VoidCallback onPressed; // 버튼 클릭 시 호출할 콜백 함수
+
+  const LoginButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
+      width: double.infinity, // 버튼 너비를 최대화
       child: ElevatedButton(
-        onPressed: () {
-          // 로그인 버튼 클릭 시 동작
-          Navigator.push(context,
-              MaterialPageRoute(builder: (content) => TimetableScreen()));
-        },
+        onPressed: onPressed, // 콜백 함수 호출
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orange,
-          padding: const EdgeInsets.symmetric(vertical: 18.0),
+          backgroundColor: Colors.orange, // 버튼 배경색
+          padding: const EdgeInsets.symmetric(vertical: 18.0), // 버튼 패딩
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(30.0)),
+            borderRadius: BorderRadius.all(Radius.circular(30.0)), // 둥근 모서리
           ),
         ),
         child: const Text(
-          'LOGIN',
-          style: TextStyle(fontSize: 24, color: Colors.white),
+          'LOGIN', // 버튼 텍스트
+          style: TextStyle(fontSize: 24, color: Colors.white), // 텍스트 스타일
         ),
       ),
     );

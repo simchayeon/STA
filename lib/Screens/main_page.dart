@@ -4,7 +4,7 @@ import 'package:smarttimetable/Screens/mypage_screen.dart';
 import 'package:smarttimetable/Screens/timetable_add.dart';
 
 class TimetableScreen extends StatelessWidget {
-  const TimetableScreen({Key? key}) : super(key: key);
+  const TimetableScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class TimetableScreen extends StatelessWidget {
                         ? ''
                         : */
                     '${index + 8}', // 9시부터 21시까지
-                    style: TextStyle(fontSize: 13), // 간결한 숫자
+                    style: const TextStyle(fontSize: 13), // 간결한 숫자
                   ),
                 );
               }),
@@ -50,7 +50,8 @@ class TimetableScreen extends StatelessWidget {
                                 color: Colors.white10,
                                 child: Text(
                                   day,
-                                  style: TextStyle(fontWeight: FontWeight.w200),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w200),
                                 ),
                               ),
                             ))
@@ -74,7 +75,7 @@ class TimetableScreen extends StatelessWidget {
         ),
       ),
       // 아래쪽에 언더바 추가 및 크기 조정
-      bottomNavigationBar: Container(
+      bottomNavigationBar: SizedBox(
         height: 80, // 언더바의 높이를 설정
         child: BottomAppBar(
           color: Colors.orange,
@@ -82,13 +83,17 @@ class TimetableScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: Icon(Icons.home_rounded),
+                icon: const Icon(Icons.home_rounded),
                 onPressed: () {
                   // 홈 버튼 클릭 시 동작
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) => const TimetableScreen()));
                 },
               ),
               IconButton(
-                icon: Icon(Icons.add_rounded),
+                icon: const Icon(Icons.add_rounded),
                 onPressed: () {
                   // 수업 추가 버튼 클릭 시 동작
                   Navigator.push(context,
@@ -96,19 +101,23 @@ class TimetableScreen extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: Icon(Icons.library_books_rounded),
+                icon: const Icon(Icons.library_books_rounded),
                 onPressed: () {
                   // 정보 버튼 클릭 시 동작
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (content) => InfoScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) => const InfoScreen()));
                 },
               ),
               IconButton(
-                icon: Icon(Icons.person_rounded),
+                icon: const Icon(Icons.person_rounded),
                 onPressed: () {
                   // 프로필 버튼 클릭 시 동작
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (content) => MyPageScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) => const MyPageScreen()));
                 },
               ),
             ],
@@ -142,7 +151,7 @@ class TimetableScreen extends StatelessWidget {
     }
 
     return Container(
-      margin: EdgeInsets.all(2.0),
+      margin: const EdgeInsets.all(2.0),
       decoration: BoxDecoration(
         color: color,
         border: Border.all(color: Colors.grey.shade300), // 회색 테두리 추가
@@ -152,7 +161,7 @@ class TimetableScreen extends StatelessWidget {
         child: Text(
           courseName.isNotEmpty ? courseName : '',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
     );

@@ -1,10 +1,13 @@
-import 'dart:ffi';
+// lib/screens/signup_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:smarttimetable/Screens/major_courses_screen.dart';
-import 'package:smarttimetable/Screens/personal_info_screen.dart';
+import 'package:smarttimetable/controllers/signup_controller.dart';
+import 'package:smarttimetable/models/signup_model.dart';
+import 'package:smarttimetable/screens/personal_info_screen.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -16,11 +19,29 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String? _selectedMajor;
   final TextEditingController _studentIdController = TextEditingController();
+  final SignUpController _signUpController = SignUpController();
 
-  void _onNext() {
-    // 다음 화면으로 넘어가는 로직을 추가하세요.
-    print('선택한 학과: $_selectedMajor');
-    print('학번: ${_studentIdController.text}');
+  void _onNext() async {
+    /*// 회원가입 정보 제출
+    SignUp signUp = SignUp(
+      major: _selectedMajor ?? '',
+      studentId: _studentIdController.text,
+    );
+
+    bool success = await _signUpController.submitSignUp(signUp);
+    if (success) {
+      // 다음 화면으로 넘어가는 로직
+      */
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PersonlaInfo()),
+    ); /*
+    } else {
+      // 회원가입 실패 처리
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원가입 실패')),
+      );
+    }*/
   }
 
   @override
@@ -75,14 +96,14 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 20),
               ],
             ),
-            // 다음 버튼을 아래에 위치시키고 길게 만들기
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (content) => PersonlaInfo()));
-                },
+                onPressed: _onNext, // 다음 버튼 클릭 시 호출
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(vertical: 18), // 세로 패딩 조정
+                ),
                 child: const Text(
                   '다음',
                   style: TextStyle(
@@ -90,10 +111,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     fontSize: 20,
                     color: Colors.white,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 18), // 세로 패딩 조정
                 ),
               ),
             ),

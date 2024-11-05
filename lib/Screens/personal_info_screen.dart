@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/major_courses_screen.dart';
 
 class PersonlaInfo extends StatefulWidget {
+  const PersonlaInfo({super.key});
+
   @override
   _SignupFormState createState() => _SignupFormState();
 }
 
 class _SignupFormState extends State<PersonlaInfo> {
   bool _isIdChecked = false;
-  TextEditingController _idController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
 
   void _checkId() {
     setState(() {
@@ -29,7 +31,7 @@ class _SignupFormState extends State<PersonlaInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('개인 정보 입력'),
+        title: const Text('회원 가입'),
         backgroundColor: Colors.orange,
       ),
       body: Padding(
@@ -43,12 +45,12 @@ class _SignupFormState extends State<PersonlaInfo> {
                 labelText: '아이디',
                 suffixIcon: ElevatedButton(
                   onPressed: _checkId,
-                  child: Text('중복확인'),
+                  child: const Text('중복확인'),
                 ),
               ),
             ),
             CheckboxListTile(
-              title: Text("아이디 중복확인 체크"),
+              title: const Text("아이디 중복확인 체크"),
               value: _isIdChecked,
               onChanged: (bool? value) {
                 setState(() {
@@ -56,11 +58,11 @@ class _SignupFormState extends State<PersonlaInfo> {
                 });
               },
             ),
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: '비밀번호'),
               obscureText: true,
             ),
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: '비밀번호 확인'),
               obscureText: true,
             ),
@@ -69,25 +71,38 @@ class _SignupFormState extends State<PersonlaInfo> {
                 labelText: '이메일',
                 suffixIcon: ElevatedButton(
                   onPressed: () {},
-                  child: Text('인증번호보내기'),
+                  child: const Text('인증번호보내기'),
                 ),
               ),
             ),
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: '인증번호 확인'),
             ),
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: '이름'),
             ),
-            SizedBox(height: 20),
-            Center(
+            const SizedBox(height: 10),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
               child: ElevatedButton(
-                onPressed: _onNext, // 다음 버튼 클릭 시 _onNext 호출
-                child: Text('다음'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) => MajorCoursesScreen()));
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
-                  padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                  textStyle: TextStyle(fontSize: 18),
+                  padding: const EdgeInsets.symmetric(vertical: 18), // 세로 패딩 조정
+                ),
+                child: const Text(
+                  '다음',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
