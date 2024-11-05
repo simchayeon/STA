@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/Screens/mypage_screen.dart';
 
 class TimetableScreen extends StatelessWidget {
   const TimetableScreen({Key? key}) : super(key: key);
@@ -93,13 +94,15 @@ class TimetableScreen extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.library_books_rounded),
                 onPressed: () {
-                  // 프로필 버튼 클릭 시 동작
+                  // 정보 버튼 클릭 시 동작
                 },
               ),
               IconButton(
                 icon: Icon(Icons.person_rounded),
                 onPressed: () {
                   // 프로필 버튼 클릭 시 동작
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (content) => MyPageScreen()));
                 },
               ),
             ],

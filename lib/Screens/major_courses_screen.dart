@@ -101,7 +101,11 @@ class _MajorCoursesScreenState extends State<MajorCoursesScreen> {
                   onPressed: () {
                     // 선택된 전공 목록을 출력하거나 다음 화면으로 이동하는 로직 추가
                     print('선택된 전공: $_selectedMajors');
-                    // Navigator.push(...)
+                    //Navigator.push(
+                      //context,
+                      //MaterialPageRoute(
+                        //  builder: (content) => MajorCoursesScreen()));
+                
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
