@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/info_screen.dart';
 import 'package:smarttimetable/Screens/mypage_screen.dart';
+import 'package:smarttimetable/Screens/timetable_add.dart';
 
 class TimetableScreen extends StatelessWidget {
   const TimetableScreen({Key? key}) : super(key: key);
@@ -90,6 +91,8 @@ class TimetableScreen extends StatelessWidget {
                 icon: Icon(Icons.add_rounded),
                 onPressed: () {
                   // 수업 추가 버튼 클릭 시 동작
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (content) => TimetableAdd()));
                 },
               ),
               IconButton(
