@@ -1,9 +1,9 @@
-// 백엔드와 통신하는 API 요청 메소드 
 // lib/services/api_service.dart
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smarttimetable/models/signup_model.dart';
+import 'package:smarttimetable/models/user_model.dart';
 
 class ApiService {
   static const String baseUrl = 'https://your-backend-url.com/api'; // 백엔드 URL
@@ -22,5 +22,21 @@ class ApiService {
     );
 
     return response.statusCode == 201; // 회원가입 성공 여부 반환
+  }
+
+  // 로그인 메소드
+  Future<bool> login(User user) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/login'), // 로그인 엔드포인트
+      headers: {
+        'Content-Type': 'application/json', // 요청 데이터 형식
+      },
+      body: jsonEncode({
+        'id': user.id, // 사용자 ID
+        'password': user.password, // 비밀번호
+      }),
+    );
+
+    return response.statusCode == 200; // 로그인 성공 여부 반환
   }
 }
