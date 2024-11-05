@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/major_courses_screen.dart';
+import 'package:smarttimetable/Screens/personal_info_screen.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -79,10 +80,8 @@ class _SignUpPageState extends State<SignUpPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (content) => MajorCoursesScreen()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (content) => PersonlaInfo()));
                 },
                 child: const Text(
                   '다음',
