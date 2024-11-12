@@ -1,9 +1,6 @@
-// lib/services/api_service.dart
-
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
-//import 'package:smarttimetable/models/signup_model.dart';
 import 'package:smarttimetable/models/user_model.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
 import 'package:smarttimetable/models/per_info_model.dart';
@@ -45,22 +42,21 @@ class ApiService {
   }
 
   // 회원가입 메소드
-  Future<bool> signUp(SignUp signUp, MajorInfo majorinfo) async {
+  Future<bool> signUp(SignUp signUp, String userId) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/members/signup'), // 회원가입 엔드포인트
+      Uri.parse('$baseUrl/members/$userId/sign_IDPW'), // 회원가입 엔드포인트 수정
       headers: {
         'Content-Type': 'application/json', // 요청 데이터 형식
       },
       body: jsonEncode({
-        'id': majorinfo.id, // 아이디
         'password': signUp.password, // 사용자 비밀번호
         'email': signUp.email, // 사용자 이메일
         'name': signUp.name, // 사용자 이름
       }),
     );
 
-    //print('Sign Up Response: ${response.statusCode}'); // 응답 상태 코드 출력
-    //print('Response Body: ${response.body}'); // 응답 본문 출력
+    _logger.info('Sign Up Response: ${response.statusCode}'); // 응답 상태 코드 출력
+    _logger.info('Response Body: ${response.body}'); // 응답 본문 출력
 
     return response.statusCode == 201; // 회원가입 성공 여부 반환
   }
@@ -68,16 +64,17 @@ class ApiService {
   // 로그인 메소드
   Future<bool> login(User user) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/members/login'), // 로그인 엔드포인트
+      Uri.parse('$baseUrl/members/login'), // 로그인 엔드포인트 수정
       headers: {
         'Content-Type': 'application/json', // 요청 데이터 형식
       },
       body: jsonEncode({
-        'id': user.id, // 사용자 ID
+        'id': user.id,
         'password': user.password, // 비밀번호
       }),
     );
 
+    _logger.info('Login Response: ${response.statusCode}'); // 응답 상태 코드 출력
     return response.statusCode == 200; // 로그인 성공 여부 반환
   }
 }

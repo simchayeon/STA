@@ -3,7 +3,6 @@ import 'package:smarttimetable/controllers/login_controller.dart';
 import 'package:smarttimetable/models/user_model.dart';
 import 'main_page.dart';
 import 'signup_screen.dart';
-import 'major_courses_screen.dart';
 import 'find_id_screen.dart';
 import 'find_password_screen.dart';
 
@@ -11,16 +10,13 @@ import 'find_password_screen.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key}); // const 생성자 추가
 
-  final LoginController _loginController =
-      LoginController(); // 로그인 컨트롤러 인스턴스 생성
+  final LoginController _loginController = LoginController(); // 로그인 컨트롤러 인스턴스 생성
 
   @override
   Widget build(BuildContext context) {
     // ID와 비밀번호 입력을 위한 텍스트 필드 컨트롤러
-    final TextEditingController idController =
-        TextEditingController(); // ID 입력 필드
-    final TextEditingController passwordController =
-        TextEditingController(); // 비밀번호 입력 필드
+    final TextEditingController idController = TextEditingController(); // ID 입력 필드
+    final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력 필드
 
     return Scaffold(
       appBar: AppBar(
@@ -55,20 +51,39 @@ class LoginPage extends StatelessWidget {
             const SizedBox(height: 20), // 위젯 간 간격
             LoginButton(
               onPressed: () {
-                // 로그인 버튼 클릭 시 User 모델 생성 및 로그인 수행
-                User user = User(
-                  //id: '123',
-                  //password: '123',
-                  id: idController.text, // ID 입력 필드에서 텍스트 가져오기
-                  password: passwordController.text, // 비밀번호 입력 필드에서 텍스트 가져오기
-                );
-                _loginController.login(user, context); // 로그인 로직 호출
+                onNext(context, idController, passwordController);
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  // 로그인 처리 로직
+  Future<void> onNext(BuildContext context, TextEditingController idController,
+      TextEditingController passwordController) async {
+    // 입력된 ID와 비밀번호를 사용하여 User 모델 생성
+    User user = User(
+      id: idController.text.trim(), // ID 입력 필드에서 텍스트 가져오기
+      password: passwordController.text.trim(), // 비밀번호 입력 필드에서 텍스트 가져오기
+    );
+
+    // 로그인 시도
+    bool success = await _loginController.login(user); // 로그인 로직 호출
+
+    if (success) {
+      // 로그인 성공 시 메인 페이지로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const TimetableScreen()), // 메인 페이지로 이동
+      );
+    } else {
+      // 로그인 실패 시 오류 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 실패: 아이디 또는 비밀번호를 확인하세요.')),
+      );
+    }
   }
 }
 
@@ -117,7 +132,6 @@ class ForgotPassword extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () {
-            // 비밀번호 찾기 페이지로 이동
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => FindPasswordScreen()),

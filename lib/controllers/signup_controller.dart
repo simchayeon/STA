@@ -1,5 +1,3 @@
-// lib/controllers/signup_controller.dart
-
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:smarttimetable/models/per_info_model.dart';
@@ -13,8 +11,7 @@ class SignUpController {
   final ApiService _apiService = ApiService(); // API 서비스 인스턴스 생성
 
   /// 전공 및 학번 정보를 제출하는 메소드
-  Future<bool> submitMajorInfo(
-      MajorInfo majorInfo, BuildContext context) async {
+  Future<bool> submitMajorInfo(MajorInfo majorInfo, BuildContext context) async {
     _logger.info('Calling submitMajorInfo...'); // 메소드 호출 로그
 
     try {
@@ -40,11 +37,12 @@ class SignUpController {
   }
 
   /// 회원가입 정보를 제출하는 메소드
-  Future<bool> submitSignUp(
-      SignUp signUp, MajorInfo majorinfo, BuildContext context) async {
+  Future<bool> submitSignUp(SignUp signUp, String userId, BuildContext context) async {
+    _logger.info('Calling submitSignUp...'); // 메소드 호출 로그
+
     try {
       // API 요청을 통해 회원가입 정보를 제출합니다.
-      bool success = await _apiService.signUp(signUp, majorinfo);
+      bool success = await _apiService.signUp(signUp, userId); // userId를 전달
       if (success) {
         // 회원가입 성공 시
         ScaffoldMessenger.of(context).showSnackBar(

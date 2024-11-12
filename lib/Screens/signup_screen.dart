@@ -36,11 +36,12 @@ class _SignUpPageState extends State<SignUpPage> {
     bool success = await _signUpController.submitMajorInfo(majorInfo, context);
 
     if (success) {
-      // 다음 페이지로 이동
+      // 다음 페이지로 이동하며 입력받은 아이디를 userId로 전달
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => const PersonalInfo()), // 정확한 클래스 이름으로 수정
+            builder: (context) =>
+                PersonalInfo(userId: _idController.text)), // 입력받은 아이디 전달
       );
     } else {
       // 회원가입 실패 처리
