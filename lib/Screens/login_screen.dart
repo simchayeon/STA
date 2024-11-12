@@ -57,6 +57,8 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 // 로그인 버튼 클릭 시 User 모델 생성 및 로그인 수행
                 User user = User(
+                  //id: '123',
+                  //password: '123',
                   id: idController.text, // ID 입력 필드에서 텍스트 가져오기
                   password: passwordController.text, // 비밀번호 입력 필드에서 텍스트 가져오기
                 );

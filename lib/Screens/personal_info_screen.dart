@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/major_courses_screen.dart';
 
-class PersonlaInfo extends StatefulWidget {
-  const PersonlaInfo({super.key});
+class PersonalInfo extends StatefulWidget {
+  const PersonalInfo({super.key});
 
   @override
   _SignupFormState createState() => _SignupFormState();
 }
 
-class _SignupFormState extends State<PersonlaInfo> {
-  bool _isIdChecked = false;
+class _SignupFormState extends State<PersonalInfo> {
+  bool _isIdChecked = true;
   final TextEditingController _idController = TextEditingController();
 
   void _checkId() {
@@ -23,7 +23,7 @@ class _SignupFormState extends State<PersonlaInfo> {
     // MajorCoursesScreen으로 이동
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MajorCoursesScreen()),
+      MaterialPageRoute(builder: (context) => const MajorCoursesScreen()),
     );
   }
 
@@ -39,25 +39,7 @@ class _SignupFormState extends State<PersonlaInfo> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _idController,
-              decoration: InputDecoration(
-                labelText: '아이디',
-                suffixIcon: ElevatedButton(
-                  onPressed: _checkId,
-                  child: const Text('중복확인'),
-                ),
-              ),
-            ),
-            CheckboxListTile(
-              title: const Text("아이디 중복확인 체크"),
-              value: _isIdChecked,
-              onChanged: (bool? value) {
-                setState(() {
-                  _isIdChecked = value ?? false;
-                });
-              },
-            ),
+            
             const TextField(
               decoration: InputDecoration(labelText: '비밀번호'),
               obscureText: true,
@@ -66,17 +48,10 @@ class _SignupFormState extends State<PersonlaInfo> {
               decoration: InputDecoration(labelText: '비밀번호 확인'),
               obscureText: true,
             ),
-            TextField(
+            const TextField(
               decoration: InputDecoration(
                 labelText: '이메일',
-                suffixIcon: ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('인증번호보내기'),
-                ),
               ),
-            ),
-            const TextField(
-              decoration: InputDecoration(labelText: '인증번호 확인'),
             ),
             const TextField(
               decoration: InputDecoration(labelText: '이름'),
@@ -90,7 +65,7 @@ class _SignupFormState extends State<PersonlaInfo> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => MajorCoursesScreen()));
+                          builder: (content) => const MajorCoursesScreen()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

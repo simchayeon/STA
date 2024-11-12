@@ -2,52 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/elective_courses_screen.dart';
 
 class MajorCoursesScreen extends StatefulWidget {
+  const MajorCoursesScreen({super.key});
+
   @override
   _MajorCoursesScreenState createState() => _MajorCoursesScreenState();
 }
 
 class _MajorCoursesScreenState extends State<MajorCoursesScreen> {
   final List<String> _majors = const [
-    'C언어프로그래밍',
-    '컴퓨터공학세미나1',
-    '공학입문설계',
-    '객체지향프로그래밍1',
-    'C언어연습',
-    '자료구조',
-    '객체지향프로그래밍2',
-    '컴퓨터공학세미나2',
-    '컴퓨터하드웨어',
-    '웹프로그래밍',
-    '고급객체지향프로그래밍',
-    '컴퓨터공학콜로키움',
-    '공개SW실무',
-    '팀프로젝트1',
-    '데이터베이스',
-    '소프트웨어공학',
-    '운영체제',
-    '컴퓨터네트워크',
-    '컴퓨터아키텍처',
-    '시스템분석 및 설계',
-    '팀프로젝트2',
-    '알고리즘',
-    '데이터베이스설계',
-    '시스템 프로그래밍',
-    '임베디드 시스템',
-    '프로그래밍언어',
-    '자기주도학습1',
-    '컴퓨터보안',
-    '컴퓨터그래픽스',
-    '컴퓨터공학특론1',
-    '자기주도학습2',
-    '시스템클라우드보안',
-    '블록체인',
-    '4차산업혁명과 기업가정신',
-    '기계학습',
-    '캡스톤디자인',
-    '네트워크컴퓨팅',
-    '컴퓨터공학특론2',
-    '모바일 프로그래밍',
-    '인공지능',
     '클라우드컴퓨팅',
     '백엔드 소프트웨어개발',
     '현장실습',
@@ -105,7 +67,8 @@ class _MajorCoursesScreenState extends State<MajorCoursesScreen> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (content) => ElectiveCoursesScreen()));
+                            builder: (content) =>
+                                const ElectiveCoursesScreen()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,

@@ -68,8 +68,10 @@ class InfoScreen extends StatelessWidget {
                 icon: const Icon(Icons.add_rounded),
                 onPressed: () {
                   // 수업 추가 버튼 클릭 시 동작
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (content) => TimetableAdd()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) => const TimetableAdd()));
                 },
               ),
               IconButton(
