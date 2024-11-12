@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:smarttimetable/models/major_model.dart';
 import 'package:smarttimetable/models/user_model.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
 import 'package:smarttimetable/models/per_info_model.dart';
@@ -58,7 +59,7 @@ class ApiService {
     _logger.info('Sign Up Response: ${response.statusCode}'); // 응답 상태 코드 출력
     _logger.info('Response Body: ${response.body}'); // 응답 본문 출력
 
-    return response.statusCode == 201; // 회원가입 성공 여부 반환
+    return response.statusCode == 200; // 회원가입 성공 여부 반환
   }
 
   // 로그인 메소드
@@ -76,5 +77,40 @@ class ApiService {
 
     _logger.info('Login Response: ${response.statusCode}'); // 응답 상태 코드 출력
     return response.statusCode == 200; // 로그인 성공 여부 반환
+  }
+
+  // 전공 목록 가져오기
+  Future<List<Major>> fetchMajors() async {
+    _logger.info('Fetching majors...'); // 전공 목록 요청 시작 로그
+
+    final response = await http.get(Uri.parse('$baseUrl/subjects/majors'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      _logger.info('Majors fetched successfully: ${response.statusCode}');
+      return jsonData.map((json) => Major.fromJson(json)).toList();
+    } else {
+      _logger.severe('Failed to fetch majors: ${response.statusCode}');
+      throw Exception('Failed to load majors');
+    }
+  }
+
+  // 전공 과목 선택 저장하기
+  Future<bool> saveSelectedMajors(
+      String userId, List<String> selectedMajors) async {
+    _logger
+        .info('Saving selected majors for user: $userId'); // 선택된 전공 저장 요청 시작 로그
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/members/$userId/sign_majorCourses'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'majors': selectedMajors}),
+    );
+
+    _logger.info(
+        'Save Selected Majors Response: ${response.statusCode}'); // 응답 상태 코드 출력
+    return response.statusCode == 200; // 성공 여부 반환
   }
 }
