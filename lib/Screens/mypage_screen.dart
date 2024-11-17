@@ -7,6 +7,7 @@ class MyPageScreen extends StatelessWidget {
   final String department = "컴퓨터공학과";
   final String studentId = "60232851";
   final String email = "dong**@gmail.com";
+  final String userId = "ff";
 
   const MyPageScreen({super.key});
 
@@ -48,8 +49,9 @@ class MyPageScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          MajorCoursesScreen()), // CourseManagementScreen은 이수과목 관리 페이지
+                      builder: (context) => MajorCoursesScreen(
+                          userId:
+                              userId)), // CourseManagementScreen은 이수과목 관리 페이지
                 );
               },
               child: Container(

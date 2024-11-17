@@ -31,6 +31,7 @@ class _SignUpPageState extends State<SignUpPage> {
       student_id: _studentIdController.text,
       id: _idController.text,
     );
+    //print('정보가 저장됨. $MajorInfo');
 
     // 전공 정보 제출
     bool success = await _signUpController.submitMajorInfo(majorInfo, context);

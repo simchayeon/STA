@@ -1,60 +1,64 @@
-// 이수 완료 고양 과목 선택 페이지
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/controllers/signup_controller.dart'; // SignUpController 임포트
+import 'package:smarttimetable/models/elective_model.dart'; // ElectiveCourse 모델 임포트
 import 'package:smarttimetable/Screens/login_screen.dart';
 
-class ElectiveCoursesScreen extends StatelessWidget {
-  const ElectiveCoursesScreen({super.key});
+class ElectiveCoursesScreen extends StatefulWidget {
+  final String userId; // 사용자 ID를 받기 위한 필드
+
+  const ElectiveCoursesScreen({super.key, required this.userId});
+
+  @override
+  _ElectiveCoursesScreenState createState() => _ElectiveCoursesScreenState();
+}
+
+class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
+  final SignUpController _signUpController = SignUpController();
+  List<ElectiveCourse> _coreCourses = []; // 핵심 교양 과목 리스트
+  List<ElectiveCourse> _commonCourses = []; // 공통 교양 과목 리스트
+  final List<String> _selectedCoreCourses = []; // 선택된 핵심 교양 저장
+  final List<String> _selectedCommonCourses = []; // 선택된 공통 교양 저장
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCourses(); // 과목 목록 가져오기
+  }
+
+  // 과목 목록 가져오는 메소드
+  Future<void> _fetchCourses() async {
+    try {
+      _coreCourses = await _signUpController.fetchCoreElectives();
+      _commonCourses = await _signUpController.fetchCommonElectives();
+      setState(() {}); // 상태 업데이트
+    } catch (e) {
+      // 오류 처리
+      print('Error fetching courses: $e');
+    }
+  }
+
+  void _onNext() async {
+    // 선택한 과목들을 백엔드에 저장
+    bool success = await _signUpController.saveSelectedElectives(
+        widget.userId, _selectedCoreCourses, _selectedCommonCourses);
+    if (success) {
+      print('선택한 과목이 저장되었습니다: $_selectedCoreCourses, $_selectedCommonCourses');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } else {
+      print('과목 저장 실패');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('회원가입'),
+        title: const Text('교양 과목 선택'),
         backgroundColor: Colors.orange,
       ),
-      body: const CourseSelectionPage(),
-    );
-  }
-}
-
-class CourseSelectionPage extends StatefulWidget {
-  const CourseSelectionPage({super.key});
-
-  @override
-  _CourseSelectionPageState createState() => _CourseSelectionPageState();
-}
-
-class _CourseSelectionPageState extends State<CourseSelectionPage> {
-  final List<String> _selectedCoreCourses = []; // 선택된 핵심교양을 저장할 리스트
-  final List<String> _selectedCommonCourses = []; // 선택된 공통교양을 저장할 리스트
-
-  final List<String> _coreCourses = [
-    '성서와 인간이해',
-    '종교와 과학',
-    '민주주의와 현대사회',
-  ];
-
-  final List<String> _commonCourses = [
-    '역사와 문명',
-    '일반화학',
-    '채플',
-  ];
-
-  void _onNext() {
-    // 선택한 과목들을 출력
-    print('선택한 핵심교양: $_selectedCoreCourses');
-    print('선택한 공통교양: $_selectedCommonCourses');
-    // 다음 화면으로 넘어가는 로직 추가 가능
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -72,54 +76,54 @@ class _CourseSelectionPageState extends State<CourseSelectionPage> {
               '핵심교양',
               style: TextStyle(fontSize: 18),
             ),
-            Column(
-              children: _coreCourses.map((course) {
-                return CheckboxListTile(
-                  title: Text(course),
-                  value: _selectedCoreCourses.contains(course),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedCoreCourses.add(course);
-                      } else {
-                        _selectedCoreCourses.remove(course);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
+            Expanded(
+              child: ListView(
+                children: _coreCourses.map((course) {
+                  return CheckboxListTile(
+                    title: Text(course.name),
+                    value: _selectedCoreCourses.contains(course.name),
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value == true) {
+                          _selectedCoreCourses.add(course.name);
+                        } else {
+                          _selectedCoreCourses.remove(course.name);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
               '공통교양',
               style: TextStyle(fontSize: 18),
             ),
-            Column(
-              children: _commonCourses.map((course) {
-                return CheckboxListTile(
-                  title: Text(course),
-                  value: _selectedCommonCourses.contains(course),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        _selectedCommonCourses.add(course);
-                      } else {
-                        _selectedCommonCourses.remove(course);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
+            Expanded(
+              child: ListView(
+                children: _commonCourses.map((course) {
+                  return CheckboxListTile(
+                    title: Text(course.name),
+                    value: _selectedCommonCourses.contains(course.name),
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value == true) {
+                          _selectedCommonCourses.add(course.name);
+                        } else {
+                          _selectedCommonCourses.remove(course.name);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 10),
-            const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (content) => LoginPage()));
-                },
+                onPressed: _onNext, // 다음 버튼 클릭 시 _onNext 메소드 호출
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   padding: const EdgeInsets.symmetric(vertical: 18), // 세로 패딩 조정

@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:smarttimetable/models/elective_model.dart';
 import 'package:smarttimetable/models/major_model.dart';
 import 'package:smarttimetable/models/per_info_model.dart';
-import 'package:smarttimetable/models/major_model.dart';
+import 'package:smarttimetable/models/elective_model.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
 //import 'package:smarttimetable/models/user_model.dart'; // SignUp 모델 임포트
 import 'package:smarttimetable/services/api_service.dart';
@@ -78,10 +79,27 @@ class SignUpController {
     );
   }
 
-  // 전공 목록 가져오기
+  // 전공 목록 가져오기 (중복 필터링 포함)
   Future<List<Major>> fetchMajors() async {
     try {
-      return await _apiService.fetchMajors(); // ApiService의 fetchMajors 호출
+      List<Major> allMajors =
+          await _apiService.fetchMajors(); // API에서 전공 목록 가져오기
+
+      // 앞 6자리가 같은 전공 필터링
+      Set<String> uniqueMajorNames = {};
+      List<Major> filteredMajors = [];
+
+      for (var major in allMajors) {
+        String prefix = major.name.length >= 6
+            ? major.name.substring(0, 6)
+            : major.name; // 길이가 6 미만일 경우 처리
+        if (!uniqueMajorNames.contains(prefix)) {
+          uniqueMajorNames.add(prefix);
+          filteredMajors.add(major); // 중복되지 않은 전공만 추가
+        }
+      }
+
+      return filteredMajors; // 필터링된 전공 리스트 반환
     } catch (e) {
       throw Exception('Failed to fetch majors: $e'); // 오류 처리
     }
@@ -95,6 +113,41 @@ class SignUpController {
           userId, selectedMajors); // ApiService의 saveSelectedMajors 호출
     } catch (e) {
       throw Exception('Failed to save selected majors: $e'); // 오류 처리
+    }
+  }
+
+  // 공통 교양 목록 가져오기
+  Future<List<ElectiveCourse>> fetchCommonElectives() async {
+    try {
+      return await _apiService
+          .fetchCommonElectives(); // ApiService의 fetchCommonElectives 호출
+    } catch (e) {
+      throw Exception('Failed to fetch common electives: $e'); // 오류 처리
+    }
+  }
+
+  // 핵심 교양 목록 가져오기
+  Future<List<ElectiveCourse>> fetchCoreElectives() async {
+    try {
+      return await _apiService
+          .fetchCoreElectives(); // ApiService의 fetchCoreElectives 호출
+    } catch (e) {
+      throw Exception('Failed to fetch core electives: $e'); // 오류 처리
+    }
+  }
+
+  // 선택한 교양 과목 저장하기
+  Future<bool> saveSelectedElectives(
+      String userId,
+      List<String> selectedCoreCourses,
+      List<String> selectedCommonCourses) async {
+    try {
+      return await _apiService.saveSelectedElectives(
+          userId,
+          selectedCoreCourses,
+          selectedCommonCourses); // ApiService의 saveSelectedElectives 호출
+    } catch (e) {
+      throw Exception('Failed to save selected electives: $e'); // 오류 처리
     }
   }
 }

@@ -4,7 +4,8 @@ import 'package:smarttimetable/models/major_model.dart';
 import 'package:smarttimetable/Screens/elective_courses_screen.dart';
 
 class MajorCoursesScreen extends StatefulWidget {
-  const MajorCoursesScreen({super.key});
+  final String userId;
+  const MajorCoursesScreen({super.key, required this.userId});
 
   @override
   _MajorCoursesScreenState createState() => _MajorCoursesScreenState();
@@ -77,7 +78,7 @@ class _MajorCoursesScreenState extends State<MajorCoursesScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     // 선택된 전공 목록을 API에 저장
-                    String userId = 'user_id'; // 실제 사용자 ID로 대체해야 함
+                    String userId = widget.userId; // 실제 사용자 ID로 대체해야 함
                     bool success = await _signUpController.saveSelectedMajors(
                         userId, _selectedMajors);
                     if (success) {
@@ -86,7 +87,7 @@ class _MajorCoursesScreenState extends State<MajorCoursesScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const ElectiveCoursesScreen()),
+                                ElectiveCoursesScreen(userId: userId,)),
                       );
                     } else {
                       print('전공 저장 실패');
