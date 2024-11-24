@@ -1,5 +1,3 @@
-// lib/screens/signup_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/controllers/signup_controller.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
@@ -13,11 +11,13 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final List<String> _majors = [
-    '컴퓨터공학과',
-  ];
+  final List<String> _majors = ['컴퓨터공학과'];
+  final List<String> _grades = ['1', '2', '3', '4']; // 학년 드롭다운 리스트
+  final List<String> _semesters = ['1', '2']; // 학기 드롭다운 리스트
 
   String? _selectedMajor;
+  String? _selectedGrade; // 선택된 학년
+  String? _selectedSemester; // 선택된 학기
   final TextEditingController _studentIdController = TextEditingController();
   final TextEditingController _idController =
       TextEditingController(); // 아이디 입력 컨트롤러
@@ -25,13 +25,14 @@ class _SignUpPageState extends State<SignUpPage> {
   final SignUpController _signUpController = SignUpController();
 
   void _onNext() async {
-    // 전공 및 학번, 아이디 정보를 모델에 저장
+    // 전공 및 학번, 아이디, 학년, 학기 정보를 모델에 저장
     MajorInfo majorInfo = MajorInfo(
       major: _selectedMajor ?? '',
       student_id: _studentIdController.text,
       id: _idController.text,
+      grade: _selectedGrade ?? '', // 학년 추가
+      semester: _selectedSemester ?? '', // 학기 추가
     );
-    //print('정보가 저장됨. $MajorInfo');
 
     // 전공 정보 제출
     bool success = await _signUpController.submitMajorInfo(majorInfo, context);
@@ -47,15 +48,14 @@ class _SignUpPageState extends State<SignUpPage> {
     } else {
       // 회원가입 실패 처리
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('전공 정보 저장 실패')),
+        const SnackBar(content: Text('정보 저장 실패')),
       );
     }
   }
 
-  // 아이디 중복 확인 메소드 (서버 요청 없이 상태만 업데이트)
+  // 아이디 중복 확인 메소드
   void _checkId() {
     setState(() {
-      // 여기서 실제 아이디 중복 확인 로직 없이 상태만 업데이트
       _isIdChecked = true; // 중복 확인 완료 상태로 변경
     });
 
@@ -103,6 +103,70 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 const SizedBox(height: 20),
+
+                // 학년과 학기를 수평으로 배치
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '학년',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            value: _selectedGrade,
+                            hint: const Text('학년을 선택하세요'),
+                            items: _grades.map((String grade) {
+                              return DropdownMenuItem<String>(
+                                value: grade,
+                                child: Text(grade),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedGrade = newValue;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20), // 간격 추가
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '학기',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          DropdownButton<String>(
+                            isExpanded: true,
+                            value: _selectedSemester,
+                            hint: const Text('학기를 선택하세요'),
+                            items: _semesters.map((String semester) {
+                              return DropdownMenuItem<String>(
+                                value: semester,
+                                child: Text(semester),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedSemester = newValue;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
                 const Text(
                   '학번',
                   style: TextStyle(fontSize: 18),
@@ -111,12 +175,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   controller: _studentIdController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    hintText: '학번을 입력하세요',
+                    hintText: '학번을 입력하세요 (예: 60240101)',
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // 아이디 입력 필드 추가
                 const Text(
                   '아이디',
                   style: TextStyle(fontSize: 18),
@@ -132,8 +194,6 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // 아이디 중복 확인 체크박스 추가
                 CheckboxListTile(
                   title: const Text("아이디 중복확인 체크"),
                   value: _isIdChecked,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:smarttimetable/models/subject_model.dart';
 import 'package:smarttimetable/models/elective_model.dart';
 import 'package:smarttimetable/models/major_model.dart';
 import 'package:smarttimetable/models/user_model.dart';
@@ -14,6 +15,43 @@ class ApiService {
   // 백엔드 URL 설정
   static const String baseUrl =
       'https://6c16-117-17-163-57.ngrok-free.app'; // 기본 주소
+
+  // 홈 화면 (메인 페이지) 정보 받는 메소드
+  Future<List<Subject>> fetchCurrentSubjects(String userId) async {
+    final response =
+        await http.get(Uri.parse('$baseUrl/members/$userId/current-subjects'));
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((json) => Subject.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load subjects');
+    }
+  }
+
+  // 공모전 정보 가져오기
+Future<List<String>> fetchContestImages() async {
+  _logger.info('Fetching contest images...'); // 공모전 이미지 요청 시작 로그
+
+  final response =
+      await http.get(Uri.parse('$baseUrl/information/information'));
+
+  if (response.statusCode == 200) {
+    String decodeBody = utf8.decode(response.bodyBytes);
+    
+    // 응답이 리스트 형태일 경우
+    List<dynamic> jsonData = json.decode(decodeBody);
+    
+    // 리스트가 올바른지 확인하고 변환
+    return List<String>.from(jsonData);
+  } else {
+    _logger.severe('Failed to fetch contest images: ${response.statusCode}');
+    throw Exception('Failed to load contest images');
+  }
+}
+
+
+
 
   // 아이디, 전공 및 학번 정보를 제출하는 메소드
   Future<bool> submitMajorInfo(MajorInfo majorInfo) async {

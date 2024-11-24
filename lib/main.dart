@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/Screens/info_screen.dart';
+import 'package:smarttimetable/Screens/mypage_screen.dart';
 import 'screens/login_screen.dart'; // 로그인 페이지 임포트
 import 'controllers/login_controller.dart';
 import 'models/user_model.dart';
@@ -13,9 +15,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: '로그인 페이지',
-      home: LoginPage(), // const 제거
+      home: InfoScreen(), // const 제거
     );
   }
 }

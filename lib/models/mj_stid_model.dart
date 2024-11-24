@@ -5,10 +5,14 @@ class MajorInfo {
   final String id;
   final String major; // 학과
   final String student_id; // 학번
+  final String grade;
+  final String semester;
 
   MajorInfo({
     required this.id,
     required this.major,
     required this.student_id,
+    required this.grade,
+    required this.semester,
   });
 }

@@ -1,28 +1,87 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/main_page.dart';
 import 'package:smarttimetable/Screens/mypage_screen.dart';
 import 'package:smarttimetable/Screens/timetable_add.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'package:smarttimetable/services/api_service.dart'; // ApiService 임포트
 
-class InfoScreen extends StatelessWidget {
+class InfoScreen extends StatefulWidget {
   const InfoScreen({super.key});
+
+  @override
+  _InfoScreenState createState() => _InfoScreenState();
+}
+
+class _InfoScreenState extends State<InfoScreen> {
+  final ApiService _apiService = ApiService();
+  List<String> _contestImages = []; // 공모전 이미지 URL 리스트
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchContestImages(); // 공모전 이미지 요청
+  }
+
+  Future<void> _fetchContestImages() async {
+    try {
+      final images = await _apiService.fetchContestImages();
+      setState(() {
+        _contestImages = images;
+      });
+    } catch (e) {
+      // 오류 처리
+      print('Error fetching contest images: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('정보'),
+        title: const Text('Smart Timetable!'),
         backgroundColor: Colors.orange,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
           children: [
-            Container(
-              height: 150, // 이미지 또는 로고의 높이 조정
-              width: double.infinity, // 이미지를 화면 너비에 맞춤
-              color: Colors.grey[300],
-            ),
+            // 공모전 이미지 슬라이드
+            _contestImages.isNotEmpty
+                ? SizedBox(
+                    height: 150,
+                    child: PageView.builder(
+                      itemCount: _contestImages.length + 1, // 이미지 개수 + 1 (버튼)
+                      itemBuilder: (context, index) {
+                        if (index < _contestImages.length) {
+                          return Image.network(
+                            _contestImages[index],
+                            fit: BoxFit.cover,
+                          );
+                        } else {
+                          return GestureDetector(
+                            onTap: () {
+                              // 공모전 홈페이지로 연결
+                              _launchURL(
+                                  'https://contest-website.com'); // 실제 URL로 변경
+                            },
+                            child: Container(
+                              color: Colors.orange,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add,
+                                  size: 50,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  )
+                : const Center(child: CircularProgressIndicator()), // 로딩 중 표시
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _launchURL(
@@ -58,10 +117,11 @@ class InfoScreen extends StatelessWidget {
                 icon: const Icon(Icons.home_rounded),
                 onPressed: () {
                   // 홈 버튼 클릭 시 동작
-                  Navigator.push(
+                  Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const TimetableScreen()));
+                          builder: (content) =>
+                              const TimetableScreen(userId: 'id')));
                 },
               ),
               IconButton(

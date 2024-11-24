@@ -10,13 +10,16 @@ import 'find_password_screen.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({super.key}); // const 생성자 추가
 
-  final LoginController _loginController = LoginController(); // 로그인 컨트롤러 인스턴스 생성
+  final LoginController _loginController =
+      LoginController(); // 로그인 컨트롤러 인스턴스 생성
 
   @override
   Widget build(BuildContext context) {
     // ID와 비밀번호 입력을 위한 텍스트 필드 컨트롤러
-    final TextEditingController idController = TextEditingController(); // ID 입력 필드
-    final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력 필드
+    final TextEditingController idController =
+        TextEditingController(); // ID 입력 필드
+    final TextEditingController passwordController =
+        TextEditingController(); // 비밀번호 입력 필드
 
     return Scaffold(
       appBar: AppBar(
@@ -76,7 +79,10 @@ class LoginPage extends StatelessWidget {
       // 로그인 성공 시 메인 페이지로 이동
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const TimetableScreen()), // 메인 페이지로 이동
+        MaterialPageRoute(
+            builder: (context) => TimetableScreen(
+                  userId: user.id,
+                )), // 메인 페이지로 이동
       );
     } else {
       // 로그인 실패 시 오류 메시지 표시

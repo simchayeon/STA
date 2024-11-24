@@ -43,9 +43,10 @@ class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
         widget.userId, _selectedCoreCourses, _selectedCommonCourses);
     if (success) {
       print('선택한 과목이 저장되었습니다: $_selectedCoreCourses, $_selectedCommonCourses');
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
+        (route) => false, // 모든 이전 화면 제거
       );
     } else {
       print('과목 저장 실패');
