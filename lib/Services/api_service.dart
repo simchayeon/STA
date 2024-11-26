@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:smarttimetable/models/mypage_model.dart';
 import 'package:smarttimetable/models/subject_model.dart';
 import 'package:smarttimetable/models/elective_model.dart';
 import 'package:smarttimetable/models/major_model.dart';
@@ -23,6 +24,12 @@ class ApiService {
 
     if (response.statusCode == 200) {
       List<dynamic> jsonData = json.decode(response.body);
+
+      // JSON 데이터가 비어있는 경우 빈 리스트 반환
+      if (jsonData.isEmpty) {
+        return [];
+      }
+
       return jsonData.map((json) => Subject.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load subjects');
@@ -30,28 +37,64 @@ class ApiService {
   }
 
   // 공모전 정보 가져오기
-Future<List<String>> fetchContestImages() async {
-  _logger.info('Fetching contest images...'); // 공모전 이미지 요청 시작 로그
+  Future<List<String>> fetchContestImages() async {
+    _logger.info('Fetching contest images...'); // 공모전 이미지 요청 시작 로그
 
-  final response =
-      await http.get(Uri.parse('$baseUrl/information/information'));
+    final response =
+        await http.get(Uri.parse('$baseUrl/information/information'));
 
-  if (response.statusCode == 200) {
-    String decodeBody = utf8.decode(response.bodyBytes);
-    
-    // 응답이 리스트 형태일 경우
-    List<dynamic> jsonData = json.decode(decodeBody);
-    
-    // 리스트가 올바른지 확인하고 변환
-    return List<String>.from(jsonData);
-  } else {
-    _logger.severe('Failed to fetch contest images: ${response.statusCode}');
-    throw Exception('Failed to load contest images');
+    if (response.statusCode == 200) {
+      String decodeBody = utf8.decode(response.bodyBytes);
+
+      // 응답이 리스트 형태일 경우
+      List<dynamic> jsonData = json.decode(decodeBody);
+
+      // 리스트가 올바른지 확인하고 변환
+      return List<String>.from(jsonData);
+    } else {
+      _logger.severe('Failed to fetch contest images: ${response.statusCode}');
+      throw Exception('Failed to load contest images');
+    }
   }
-}
 
+  // 사용자 정보 받는 메소드
+  Future<MypageModel> fetchUserInfo(String userId) async {
+    final response =
+        await http.get(Uri.parse('$baseUrl/members/$userId/myPage'));
 
+    if (response.statusCode == 200) {
+      // 응답 바디를 UTF-8로 디코딩
+      String responseBody = utf8.decode(response.bodyBytes);
+      print('Response body: $responseBody'); // 응답 본문 로그 출력
 
+      // JSON 파싱
+      final jsonData = json.decode(responseBody);
+      return MypageModel.fromJson(jsonData);
+    } else {
+      _logger.severe('Failed to load user info: ${response.statusCode}');
+      throw Exception('Failed to load user info');
+    }
+  }
+
+  // 학번, 학년 수정 메소드
+  Future<void> updateGradeSemester(
+      String userId, String grade, String semester) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/members/$userId/manageGradeSemester'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'grade': grade,
+        'semester': semester,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Failed to update grade and semester: ${response.statusCode}');
+    }
+  }
 
   // 아이디, 전공 및 학번 정보를 제출하는 메소드
   Future<bool> submitMajorInfo(MajorInfo majorInfo) async {
@@ -72,6 +115,8 @@ Future<List<String>> fetchContestImages() async {
         'id': majorInfo.id, // 아이디
         'major': majorInfo.major, // 학과
         'student_id': majorInfo.student_id, // 학번
+        'grade': majorInfo.grade,
+        'semester': majorInfo.semester,
       }),
     );
 
@@ -122,16 +167,37 @@ Future<List<String>> fetchContestImages() async {
   Future<List<Major>> fetchMajors() async {
     _logger.info('Fetching majors...'); // 전공 목록 요청 시작 로그
 
-    final response = await http.get(Uri.parse('$baseUrl/subjects/majors'));
+    final response = await http.get(Uri.parse('$baseUrl/subjects/allMajors'));
 
     if (response.statusCode == 200) {
       String decodeBody = utf8.decode(response.bodyBytes);
-      List<dynamic> jsonData = json.decode(decodeBody);
+      List<String> jsonData =
+          List<String>.from(json.decode(decodeBody)); // 문자열 리스트로 변환
       _logger.info('Majors fetched successfully: ${response.statusCode}');
-      return jsonData.map((json) => Major.fromJson(json)).toList();
+
+      // Major 객체로 변환
+      return jsonData.map((name) => Major(name: name)).toList();
     } else {
       _logger.severe('Failed to fetch majors: ${response.statusCode}');
       throw Exception('Failed to load majors');
+    }
+  }
+
+  // 사용자가 선택한 전공 과목 가져오는 메소드
+  Future<List<String>> fetchCompletedMajors(String userId) async {
+    final response = await http.get(Uri.parse(
+        '$baseUrl/members/$userId/completedCourseHistoryManagementMajor'));
+
+    if (response.statusCode == 200) {
+      // 응답 바디를 UTF-8로 디코딩
+      String decodedBody = utf8.decode(response.bodyBytes);
+      print('Response body: $decodedBody'); // 응답 로그 출력
+
+      List<dynamic> jsonData = json.decode(decodedBody);
+      return List<String>.from(jsonData); // 전공 과목 이름 리스트 반환
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}'); // 에러 로그 출력
+      throw Exception('Failed to load completed majors');
     }
   }
 
@@ -216,5 +282,96 @@ Future<List<String>> fetchContestImages() async {
     _logger.info(
         'Save Selected Majors Response: ${response.statusCode}'); // 응답 상태 코드 출력
     return response.statusCode == 200; // 성공 여부 반환
+  }
+
+  // 선택된 과목 가져오는 메소드
+  Future<List<String>> fetchCompletedCourses(String userId, String type) async {
+    final String url = type == 'core'
+        ? '$baseUrl/members/$userId/completedCourseHistoryManagementCore'
+        : '$baseUrl/members/$userId/completedCourseHistoryManagementCommon';
+
+    final response = await http.get(Uri.parse(url));
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      String decodedBody = utf8.decode(response.bodyBytes);
+      List<dynamic> jsonData = json.decode(decodedBody);
+      return List<String>.from(jsonData);
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to load completed courses');
+    }
+  }
+
+  // 아이디 찾기 메소드
+  Future<String> findUserId(String studentId, String name, String email) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/members/findId?student_id=$studentId&name=$name&email=$email'), // GET 요청으로 변경
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    print('Response body: ${response.body}'); // 응답 본문 출력
+
+    if (response.statusCode == 200) {
+      // 서버가 텍스트 형식으로 응답하는 경우
+      String responseBody = response.body;
+
+      // 텍스트 형식에서 ID를 추출하는 로직을 추가해야 합니다.
+      // 예를 들어, 응답이 "아이디: 123456" 형태라면
+      RegExp regex = RegExp(r'아이디:\s*(\S+)');
+      Match? match = regex.firstMatch(responseBody);
+
+      if (match != null) {
+        String userId = match.group(1)!; // 첫 번째 그룹에서 사용자 ID 추출
+        print('Extracted User ID: $userId'); // 추출된 ID 출력
+        return userId; // 사용자 ID 반환
+      } else {
+        throw Exception('Failed to find user ID in response: $responseBody');
+      }
+    } else {
+      _logger.severe(
+          'Failed to load user ID: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to find user ID: ${response.body}'); // 에러 메시지 개선
+    }
+  }
+
+  // 비밀번호 찾기 메소드
+  Future<String> findPassword(
+      String userId, String email, String studentId, String name) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/members/findPassword?id=$userId&email=$email&student_id=$studentId&name=$name'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    print('Response body: ${response.body}'); // 응답 본문 출력
+
+    if (response.statusCode == 200) {
+      // 서버가 텍스트 형식으로 응답하는 경우
+      String responseBody = response.body;
+
+      // 텍스트 형식에서 비밀번호를 추출하는 로직을 추가해야 합니다.
+      RegExp regex = RegExp(r'비밀번호:\s*(\S+)');
+      Match? match = regex.firstMatch(responseBody);
+
+      if (match != null) {
+        String password = match.group(1)!; // 첫 번째 그룹에서 비밀번호 추출
+        print('Extracted Password: $password'); // 추출된 비밀번호 출력
+        return password; // 비밀번호 반환
+      } else {
+        throw Exception('Failed to find password in response: $responseBody');
+      }
+    } else {
+      _logger.severe(
+          'Failed to load password: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to find password: ${response.body}'); // 에러 메시지 개선
+    }
   }
 }

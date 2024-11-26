@@ -1,20 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/Screens/elective_manage_screen.dart';
 import 'package:smarttimetable/Screens/login_screen.dart';
 import 'package:smarttimetable/Screens/major_courses_screen.dart';
+import 'package:smarttimetable/Screens/major_manage_screen.dart';
+import 'package:smarttimetable/models/mypage_model.dart';
+import 'package:smarttimetable/services/api_service.dart'; // ApiService 임포트
 
-class MyPageScreen extends StatelessWidget {
-  // 임시 데이터
-  final String name = "배윤호";
-  final String department = "컴퓨터공학과";
-  final String studentId = "60232851";
-  final String email = "dong**@gmail.com";
-  final String userId = "ff";
+class MyPageScreen extends StatefulWidget {
+  final String userId; // 사용자 ID를 받기 위한 필드
 
-  // 임시 데이터 추가
-  final String grade = "2학년";
-  final String semester = "2학기";
+  const MyPageScreen({super.key, required this.userId});
 
-  const MyPageScreen({super.key});
+  @override
+  _MyPageScreenState createState() => _MyPageScreenState();
+}
+
+class _MyPageScreenState extends State<MyPageScreen> {
+  final ApiService _apiService = ApiService(); // ApiService 인스턴스
+  MypageModel? _user; // 사용자 정보를 저장할 변수
+  bool _isLoading = true; // 로딩 상태 관리
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData(); // 사용자 데이터 요청
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      _user = await _apiService.fetchUserInfo(widget.userId);
+      setState(() {
+        _isLoading = false; // 로딩 완료
+      });
+    } catch (e) {
+      // 오류 처리
+      print('Failed to load user data: $e');
+      setState(() {
+        _isLoading = false; // 로딩 완료
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,151 +50,143 @@ class MyPageScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.grey[200],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Text(
-                name, // 임시 데이터 사용
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text('학과 : $department'), // 임시 데이터 사용
-            Text('학번 : $studentId'), // 임시 데이터 사용
-            Text('아이디 : $email'), // 임시 데이터 사용
-            const SizedBox(height: 20),
-
-            // 학년과 학기를 수평으로 배치
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('학년 : $grade'), // 임시 데이터 사용
-                Text('학기 : $semester'), // 임시 데이터 사용
-                TextButton(
-                  onPressed: () {
-                    _showEditDialog(context); // 수정하기 로직
-                  },
-                  child: const Text(
-                    '수정하기',
-                    style: TextStyle(color: Colors.blue),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator()) // 로딩 중 표시
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  Center(
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[200],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-
-            GestureDetector(
-              onTap: () {
-                // 이수과목 관리 페이지로 이동하는 로직
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MajorCoursesScreen(
-                          userId:
-                              userId)), // CourseManagementScreen은 이수과목 관리 페이지
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    '전공 이수 과목 관리',
-                    style: TextStyle(fontSize: 18),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      _user?.name ?? '이름 로딩 중...',
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10), // 이수과목 관리2 버튼과의 간격
-            GestureDetector(
-              onTap: () {
-                // 이수과목 관리2 페이지로 이동하는 로직
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MajorCoursesScreen(
-                          userId:
-                              userId)), // CourseManagementScreen은 이수과목 관리 페이지
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    '교양 이수 과목 관리',
-                    style: TextStyle(fontSize: 18),
+                  const SizedBox(height: 20),
+                  Text('학과 : ${_user?.major ?? '로딩 중...'}'),
+                  Text('학번 : ${_user?.std_id ?? '로딩 중...'}'),
+                  Text('이메일 : ${_user?.email ?? '로딩 중...'}'),
+                  Text('아이디 : ${_user?.id ?? '로딩 중...'}'),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('학년 : ${_user?.grade ?? '로딩 중...'} 학년'),
+                      Text('학기 : ${_user?.semester ?? '로딩 중...'} 학기'),
+                      TextButton(
+                        onPressed: () {
+                          _showEditDialog(context); // 수정하기 로직
+                        },
+                        child: const Text(
+                          '수정하기',
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 30),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                MajorManageScreen(userId: widget.userId)),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '전공 이수 과목 관리',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ElectiveManageScreen(userId: widget.userId)),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '교양 이수 과목 관리',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: () {
+                      _logout(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text(
+                      '로그아웃',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      // 회원탈퇴 처리
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text(
+                      '회원탈퇴',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const Spacer(), // 남은 공간을 채워서 버튼을 아래로 밀어냄
-
-            // 로그아웃 버튼
-            ElevatedButton(
-              onPressed: () {
-                // 로그아웃 처리
-                _logout(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                minimumSize: const Size(double.infinity, 50), // 가로 길이 최대화
-              ),
-              child: const Text(
-                '로그아웃',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // 회원탈퇴 버튼
-            ElevatedButton(
-              onPressed: () {
-                // 회원탈퇴 처리
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                minimumSize: const Size(double.infinity, 50), // 가로 길이 최대화
-              ),
-              child: const Text(
-                '회원탈퇴',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
   void _showEditDialog(BuildContext context) {
-    String? newGrade;
-    String? newSemester;
+    String? newGrade = _user?.grade; // 기존 학년으로 초기화
+    String? newSemester = _user?.semester; // 기존 학기로 초기화
 
     showDialog(
       context: context,
@@ -181,7 +198,7 @@ class MyPageScreen extends StatelessWidget {
             children: [
               DropdownButton<String>(
                 isExpanded: true,
-                value: newGrade,
+                value: null,
                 hint: const Text('학년을 선택하세요'),
                 items: ['1', '2', '3', '4'].map((String grade) {
                   return DropdownMenuItem<String>(
@@ -190,12 +207,14 @@ class MyPageScreen extends StatelessWidget {
                   );
                 }).toList(),
                 onChanged: (String? value) {
-                  newGrade = value;
+                  setState(() {
+                    newGrade = value; // 선택한 값을 상태에 반영
+                  });
                 },
               ),
               DropdownButton<String>(
                 isExpanded: true,
-                value: newSemester,
+                value: null,
                 hint: const Text('학기를 선택하세요'),
                 items: ['1', '2'].map((String semester) {
                   return DropdownMenuItem<String>(
@@ -204,17 +223,40 @@ class MyPageScreen extends StatelessWidget {
                   );
                 }).toList(),
                 onChanged: (String? value) {
-                  newSemester = value;
+                  setState(() {
+                    newSemester = value; // 선택한 값을 상태에 반영
+                  });
                 },
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                // 수정하기 로직 추가 가능
-                // 예를 들어, 새로운 학년과 학기를 상태에 반영하는 코드
-                Navigator.of(context).pop();
+              onPressed: () async {
+                if (newGrade != null && newSemester != null) {
+                  try {
+                    await _apiService.updateGradeSemester(
+                        widget.userId, newGrade!, newSemester!);
+                    // 성공적으로 업데이트 후 UI 업데이트
+                    setState(() {
+                      _user?.grade = newGrade!;
+                      _user?.semester = newSemester!;
+                    });
+                    Navigator.of(context).pop(); // 다이얼로그 닫기
+                  } catch (e) {
+                    // 오류 처리
+                    print('Failed to update grade and semester: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('수정에 실패했습니다. 다시 시도하세요.')),
+                    );
+                  }
+                } else {
+                  // 선택되지 않은 경우 오류 메시지
+                  print('학년 또는 학기가 선택되지 않았습니다.');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('학년과 학기를 선택하세요.')),
+                  );
+                }
               },
               child: const Text('수정하기'),
             ),
@@ -232,10 +274,6 @@ class MyPageScreen extends StatelessWidget {
 
   void _logout(BuildContext context) {
     // 로그아웃 처리 로직
-    // 예를 들어, 세션 또는 토큰 삭제 코드를 여기에 추가
-    // SharedPreferences 등을 사용하여 저장된 사용자 정보를 삭제할 수 있습니다.
-
-    // 로그아웃 후 로그인 화면으로 이동
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginPage()), // 로그인 화면으로 이동

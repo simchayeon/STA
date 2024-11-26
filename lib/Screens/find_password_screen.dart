@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/login_screen.dart';
+import 'package:smarttimetable/services/api_service.dart';
 
 class FindPasswordScreen extends StatefulWidget {
+  const FindPasswordScreen({super.key});
+
   @override
   _FindPasswordScreenState createState() => _FindPasswordScreenState();
 }
@@ -15,28 +18,29 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
   String _message = '';
   String _password = ''; // 사용자 비밀번호를 저장할 변수
   bool _showLoginButton = false; // 로그인 버튼 표시 여부
+  final ApiService _apiService = ApiService(); // ApiService 인스턴스
 
-  void _findPassword() {
-    // 여기에 백엔드와 연결하는 로직을 추가합니다.
-    // 예시 데이터 (실제 데이터와 비교하는 로직 필요)
-    String correctId = '123456';
-    String correctEmail = 'hong@example.com';
-    String correctName = '홍길동';
-    String correctStudentId = '20220001';
-    String correctPassword = 'securePassword'; // 예시 비밀번호
+  void _findPassword() async {
+    setState(() {
+      _message = ''; // 메시지 초기화
+    });
 
-    if (_userIdController.text == correctId &&
-        _emailController.text == correctEmail &&
-        _studentIdController.text == correctStudentId &&
-        _nameController.text == correctName) {
+    try {
+      String password = await _apiService.findPassword(
+        _userIdController.text,
+        _emailController.text,
+        _studentIdController.text,
+        _nameController.text,
+      );
+
       setState(() {
         _message = '비밀번호를 찾았습니다!';
-        _password = correctPassword; // 비밀번호를 저장
+        _password = password; // 비밀번호를 저장
         _showLoginButton = true; // 로그인 버튼 표시
       });
-    } else {
+    } catch (e) {
       setState(() {
-        _message = '일치하지 않습니다';
+        _message = '일치하지 않습니다'; // 오류 메시지
         _showLoginButton = false; // 로그인 버튼 숨김
       });
     }
@@ -46,7 +50,7 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('비밀번호 찾기'),
+        title: const Text('비밀번호 찾기'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,9 +60,9 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
             Column(
               children: [
                 // 아이디 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '아이디',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -70,12 +74,12 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     hintText: '아이디를 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 이메일 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '이메일',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -87,12 +91,12 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     hintText: '이메일을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 학번 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '학번',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -104,12 +108,12 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     hintText: '학번을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 이름 입력 필드
-                Align(
+                const Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
-                  child: const Text(
+                  child: Text(
                     '이름',
                     style: TextStyle(fontSize: 18),
                   ),
@@ -121,23 +125,23 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     hintText: '이름을 입력하세요',
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 오류 메시지 표시
                 if (_message.isNotEmpty)
                   Text(
                     _message,
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 // 비밀번호 표시
                 if (_showLoginButton) // 비밀번호 표시
                   Text(
                     '당신의 비밀번호는 $_password 입니다.',
-                    style: TextStyle(fontSize: 18, color: Colors.green),
+                    style: const TextStyle(fontSize: 18, color: Colors.green),
                   ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
               ],
             ),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/login_screen.dart';
+import 'package:smarttimetable/services/api_service.dart';
 
 class FindIDScreen extends StatefulWidget {
   const FindIDScreen({super.key});
@@ -16,25 +17,28 @@ class _FindIDScreenState extends State<FindIDScreen> {
   String _message = '';
   String _userId = ''; // 사용자 ID를 저장할 변수
   bool _showLoginButton = false; // 로그인 버튼 표시 여부
+  final ApiService _apiService = ApiService(); // ApiService 인스턴스
 
-  void _findId() {
-    // 여기에 백엔드와 연결하는 로직을 추가합니다.
-    // 예시 데이터 (실제 데이터와 비교하는 로직 필요)
-    String correctId = '123456';
-    String correctName = '홍길동';
-    String correctEmail = 'hong@example.com';
+  void _findId() async {
+    setState(() {
+      _message = ''; // 메시지 초기화
+    });
 
-    if (_studentIdController.text == correctId &&
-        _nameController.text == correctName &&
-        _emailController.text == correctEmail) {
+    try {
+      String id = await _apiService.findUserId(
+        _studentIdController.text,
+        _nameController.text,
+        _emailController.text,
+      );
+
       setState(() {
         _message = '성공했습니다!';
-        _userId = correctId; // ID를 저장
+        _userId = id; // ID를 저장
         _showLoginButton = true; // 로그인 버튼 표시
       });
-    } else {
+    } catch (e) {
       setState(() {
-        _message = '일치하지 않습니다';
+        _message = '일치하지 않습니다: $e'; // 오류 메시지에 예외 추가
         _showLoginButton = false; // 로그인 버튼 숨김
       });
     }
@@ -53,9 +57,8 @@ class _FindIDScreenState extends State<FindIDScreen> {
           children: [
             Column(
               children: [
-                // 학번 입력 필드
                 const Align(
-                  alignment: Alignment.centerLeft, // 왼쪽 정렬
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     '학번',
                     style: TextStyle(fontSize: 18),
@@ -69,10 +72,8 @@ class _FindIDScreenState extends State<FindIDScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // 이름 입력 필드
                 const Align(
-                  alignment: Alignment.centerLeft, // 왼쪽 정렬
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     '이름',
                     style: TextStyle(fontSize: 18),
@@ -86,10 +87,8 @@ class _FindIDScreenState extends State<FindIDScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // 이메일 입력 필드
                 const Align(
-                  alignment: Alignment.centerLeft, // 왼쪽 정렬
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     '이메일',
                     style: TextStyle(fontSize: 18),
@@ -103,17 +102,13 @@ class _FindIDScreenState extends State<FindIDScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // 오류 메시지 표시
                 if (_message.isNotEmpty)
                   Text(
                     _message,
                     style: const TextStyle(color: Colors.red),
                   ),
                 const SizedBox(height: 20),
-
-                // 아이디 표시
-                if (_showLoginButton) // ID 표시
+                if (_showLoginButton)
                   Text(
                     '당신의 ID는 $_userId 입니다.',
                     style: const TextStyle(fontSize: 18, color: Colors.green),
@@ -121,14 +116,11 @@ class _FindIDScreenState extends State<FindIDScreen> {
                 const SizedBox(height: 20),
               ],
             ),
-
-            // 로그인 화면으로 버튼
-            if (_showLoginButton) // 로그인 버튼은 조건부로 표시
+            if (_showLoginButton)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // 로그인 페이지로 이동
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -137,7 +129,7 @@ class _FindIDScreenState extends State<FindIDScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // 다른 색상으로 설정 가능
+                    backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                   ),
                   child: const Text(
@@ -150,11 +142,7 @@ class _FindIDScreenState extends State<FindIDScreen> {
                   ),
                 ),
               ),
-            const SizedBox(
-              height: 10,
-            ),
-
-            // 다음 버튼
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

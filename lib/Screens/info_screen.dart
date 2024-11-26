@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:smarttimetable/services/api_service.dart'; // ApiService 임포트
 
 class InfoScreen extends StatefulWidget {
-  const InfoScreen({super.key});
+  final String userId; // 사용자 ID를 받기 위한 필드
+
+  const InfoScreen({super.key, required this.userId});
 
   @override
   _InfoScreenState createState() => _InfoScreenState();
@@ -17,6 +19,7 @@ class InfoScreen extends StatefulWidget {
 class _InfoScreenState extends State<InfoScreen> {
   final ApiService _apiService = ApiService();
   List<String> _contestImages = []; // 공모전 이미지 URL 리스트
+  final PageController _pageController = PageController(); // 페이지 컨트롤러 추가
 
   @override
   void initState() {
@@ -36,6 +39,15 @@ class _InfoScreenState extends State<InfoScreen> {
     }
   }
 
+  void _nextPage() {
+    if (_contestImages.isNotEmpty) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,37 +61,97 @@ class _InfoScreenState extends State<InfoScreen> {
           children: [
             // 공모전 이미지 슬라이드
             _contestImages.isNotEmpty
-                ? SizedBox(
-                    height: 150,
-                    child: PageView.builder(
-                      itemCount: _contestImages.length + 1, // 이미지 개수 + 1 (버튼)
-                      itemBuilder: (context, index) {
-                        if (index < _contestImages.length) {
-                          return Image.network(
-                            _contestImages[index],
-                            fit: BoxFit.cover,
-                          );
-                        } else {
-                          return GestureDetector(
-                            onTap: () {
-                              // 공모전 홈페이지로 연결
-                              _launchURL(
-                                  'https://contest-website.com'); // 실제 URL로 변경
-                            },
-                            child: Container(
-                              color: Colors.orange,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.add,
-                                  size: 50,
-                                  color: Colors.white,
+                ? Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        height: 350,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount:
+                              _contestImages.length + 1, // 이미지 개수 + 1 (버튼)
+                          itemBuilder: (context, index) {
+                            if (index < _contestImages.length) {
+                              return Image.network(
+                                _contestImages[index],
+                                fit: BoxFit.contain,
+                              );
+                            } else {
+                              return GestureDetector(
+                                onTap: () {
+                                  // 공모전 홈페이지로 연결
+                                  _launchURL(
+                                      'https://www.campuspick.com/contest'); // 실제 URL로 변경
+                                },
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      color: Colors.orange,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.add,
+                                          size: 50,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: 10,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.arrow_back,
+                                          color: Colors.white,
+                                        ),
+                                        onPressed: () {
+                                          // 왼쪽 화살표 클릭 시 이전 페이지로 이동
+                                          if (_pageController.page!.toInt() >
+                                              0) {
+                                            _pageController.previousPage(
+                                              duration: const Duration(
+                                                  milliseconds: 300),
+                                              curve: Curves.easeIn,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        left: 10,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: Colors.orange[100],
+                          ),
+                          onPressed: () {
+                            // 왼쪽 화살표 클릭 시 이전 페이지로 이동
+                            if (_pageController.page!.toInt() > 0) {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeIn,
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        right: 10,
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.arrow_forward,
+                            color: Colors.orange[100],
+                          ),
+                          onPressed: _nextPage, // 오른쪽 화살표 클릭 시 다음 페이지로 이동
+                        ),
+                      ),
+                    ],
                   )
                 : const Center(child: CircularProgressIndicator()), // 로딩 중 표시
             const SizedBox(height: 20),
@@ -120,8 +192,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (content) =>
-                              const TimetableScreen(userId: 'id')));
+                          builder: (content) => TimetableScreen(
+                              userId: widget.userId))); // 사용자 ID 전달
                 },
               ),
               IconButton(
@@ -131,7 +203,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const TimetableAdd()));
+                          builder: (content) =>
+                              const TimetableAdd())); // 사용자 ID 전달
                 },
               ),
               IconButton(
@@ -141,7 +214,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const InfoScreen()));
+                          builder: (content) =>
+                              InfoScreen(userId: widget.userId))); // 사용자 ID 전달
                 },
               ),
               IconButton(
@@ -151,7 +225,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const MyPageScreen()));
+                          builder: (content) => MyPageScreen(
+                              userId: widget.userId))); // 사용자 ID 전달
                 },
               ),
             ],

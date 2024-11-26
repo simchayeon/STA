@@ -47,7 +47,9 @@ class _PersonalInfoState extends State<PersonalInfo> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MajorCoursesScreen(userId: widget.userId,),
+          builder: (context) => MajorCoursesScreen(
+            userId: widget.userId,
+          ),
         ),
       );
     } else {

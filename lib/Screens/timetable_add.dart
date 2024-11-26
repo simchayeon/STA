@@ -197,7 +197,9 @@ class _TimetableAddState extends State<TimetableAdd> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const InfoScreen()));
+                          builder: (content) => const InfoScreen(
+                                userId: '임시',
+                              )));
                 },
               ),
               IconButton(
@@ -206,7 +208,8 @@ class _TimetableAddState extends State<TimetableAdd> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) => const MyPageScreen()));
+                          builder: (content) =>
+                              const MyPageScreen(userId: '임시')));
                 },
               ),
             ],

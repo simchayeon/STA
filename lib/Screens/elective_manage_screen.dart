@@ -3,16 +3,16 @@ import 'package:smarttimetable/controllers/signup_controller.dart'; // SignUpCon
 import 'package:smarttimetable/models/elective_model.dart'; // ElectiveCourse 모델 임포트
 import 'package:smarttimetable/Screens/login_screen.dart';
 
-class ElectiveCoursesScreen extends StatefulWidget {
+class ElectiveManageScreen extends StatefulWidget {
   final String userId; // 사용자 ID를 받기 위한 필드
 
-  const ElectiveCoursesScreen({super.key, required this.userId});
+  const ElectiveManageScreen({super.key, required this.userId});
 
   @override
-  _ElectiveCoursesScreenState createState() => _ElectiveCoursesScreenState();
+  _ElectiveManageScreenState createState() => _ElectiveManageScreenState();
 }
 
-class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
+class _ElectiveManageScreenState extends State<ElectiveManageScreen> {
   final SignUpController _signUpController = SignUpController();
   List<ElectiveCourse> _coreCourses = []; // 핵심 교양 과목 리스트
   List<ElectiveCourse> _commonCourses = []; // 공통 교양 과목 리스트
@@ -23,6 +23,7 @@ class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
   void initState() {
     super.initState();
     _fetchCourses(); // 과목 목록 가져오기
+    _fetchSelectedCourses(); // 선택된 과목 가져오기
   }
 
   // 과목 목록 가져오는 메소드
@@ -34,6 +35,23 @@ class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
     } catch (e) {
       // 오류 처리
       print('Error fetching courses: $e');
+    }
+  }
+
+  // 선택된 과목 가져오는 메소드
+  Future<void> _fetchSelectedCourses() async {
+    try {
+      // 사용자가 선택한 핵심 교양 과목 가져오기
+      List<String> selectedCoreCourses = await _signUpController.fetchCompletedCourses(widget.userId, 'core');
+      // 사용자가 선택한 공통 교양 과목 가져오기
+      List<String> selectedCommonCourses = await _signUpController.fetchCompletedCourses(widget.userId, 'common');
+
+      setState(() {
+        _selectedCoreCourses.addAll(selectedCoreCourses);
+        _selectedCommonCourses.addAll(selectedCommonCourses);
+      });
+    } catch (e) {
+      print('Error fetching selected courses: $e');
     }
   }
 
@@ -57,7 +75,7 @@ class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('회원가입'),
+        title: const Text('과목 관리'),
         backgroundColor: Colors.orange,
       ),
       body: Padding(
@@ -66,7 +84,7 @@ class _ElectiveCoursesScreenState extends State<ElectiveCoursesScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              '이수 완료 교양 과목 선택',
+              '이수 완료 교양 과목 관리',
               style: TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 20),
