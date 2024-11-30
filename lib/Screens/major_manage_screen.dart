@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/controllers/signup_controller.dart';
-import 'package:smarttimetable/services/api_service.dart';
+import 'package:smarttimetable/Services/api_service.dart';
 import 'package:smarttimetable/models/major_model.dart';
 
 class MajorManageScreen extends StatefulWidget {

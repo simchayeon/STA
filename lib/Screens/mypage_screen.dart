@@ -4,7 +4,7 @@ import 'package:smarttimetable/Screens/login_screen.dart';
 import 'package:smarttimetable/Screens/major_courses_screen.dart';
 import 'package:smarttimetable/Screens/major_manage_screen.dart';
 import 'package:smarttimetable/models/mypage_model.dart';
-import 'package:smarttimetable/services/api_service.dart'; // ApiService 임포트
+import 'package:smarttimetable/Services/api_service.dart'; // ApiService 임포트
 
 class MyPageScreen extends StatefulWidget {
   final String userId; // 사용자 ID를 받기 위한 필드
@@ -162,7 +162,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-                      // 회원탈퇴 처리
+                      _showWithdrawalDialog(context); // 회원 탈퇴 다이얼로그 표시
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -278,6 +278,50 @@ class _MyPageScreenState extends State<MyPageScreen> {
       context,
       MaterialPageRoute(builder: (context) => LoginPage()), // 로그인 화면으로 이동
       (route) => false, // 모든 이전 화면 제거
+    );
+  }
+
+  // MyPageScreen 클래스 내에서
+
+  void _showWithdrawalDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('회원 탈퇴'),
+          content: const Text('정말로 회원 탈퇴를 하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  print(
+                      'Calling withdrawMembership with userId: ${widget.userId}');
+                  await _apiService.withdrawMembership(widget.userId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('회원 탈퇴가 완료되었습니다.')),
+                  );
+
+                  // 로그아웃 처리
+                  _logout(context);
+                } catch (e) {
+                  // 오류 처리
+                  print('회원 탈퇴 실패: ${e.toString()}');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('회원 탈퇴에 실패했습니다. 다시 시도하세요.')),
+                  );
+                }
+              },
+              child: const Text('확인'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+              child: const Text('취소'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

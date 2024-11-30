@@ -5,7 +5,7 @@ import 'package:smarttimetable/Screens/mypage_screen.dart';
 import 'package:smarttimetable/Screens/timetable_add.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
-import 'package:smarttimetable/services/api_service.dart'; // ApiService 임포트
+import 'package:smarttimetable/Services/api_service.dart'; // ApiService 임포트
 
 class InfoScreen extends StatefulWidget {
   final String userId; // 사용자 ID를 받기 위한 필드

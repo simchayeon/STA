@@ -3,6 +3,8 @@ import 'package:smarttimetable/controllers/signup_controller.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
 import 'personal_info_screen.dart';
 
+import 'package:smarttimetable/Services/api_service.dart';
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -23,6 +25,7 @@ class _SignUpPageState extends State<SignUpPage> {
       TextEditingController(); // 아이디 입력 컨트롤러
   bool _isIdChecked = false; // 아이디 중복 확인 체크 여부
   final SignUpController _signUpController = SignUpController();
+  final ApiService _apiService = ApiService(); // ApiService 인스턴스 생성
 
   void _onNext() async {
     // 전공 및 학번, 아이디, 학년, 학기 정보를 모델에 저장
@@ -54,15 +57,50 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   // 아이디 중복 확인 메소드
-  void _checkId() {
-    setState(() {
-      _isIdChecked = true; // 중복 확인 완료 상태로 변경
-    });
+  void _checkId() async {
+    String userId = _idController.text;
 
-    // 피드백 메시지 표시
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('아이디 중복 확인 완료')),
-    );
+    print('Checking ID: $userId'); // 입력된 아이디 출력
+
+    // 아이디가 비어 있는 경우
+    if (userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('아이디를 입력하세요')),
+      );
+      return;
+    }
+
+    // 백엔드에 아이디 중복 확인 요청
+    try {
+      bool exists = await _apiService.checkIdExists(userId);
+
+      print('ID Exists: $exists'); // exists 값 출력
+
+      if (exists) {
+        // 아이디가 이미 존재하는 경우
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 존재하는 아이디입니다')),
+        );
+        setState(() {
+          _isIdChecked = false; // 체크 해제
+        });
+      } else {
+        // 아이디가 존재하지 않는 경우
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('아이디 사용 가능합니다')),
+        );
+        setState(() {
+          _isIdChecked = true; // 체크
+        });
+      }
+    } catch (e) {
+      // 에러 처리
+      print('Error during ID check: $e'); // 오류 로그 출력
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('아이디 중복 확인 중 오류 발생')),
+      );
+    }
   }
 
   @override

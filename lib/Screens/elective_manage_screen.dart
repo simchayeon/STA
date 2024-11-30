@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smarttimetable/Services/api_service.dart';
 import 'package:smarttimetable/controllers/signup_controller.dart'; // SignUpController 임포트
 import 'package:smarttimetable/models/elective_model.dart'; // ElectiveCourse 모델 임포트
 import 'package:smarttimetable/Screens/login_screen.dart';
@@ -9,21 +10,21 @@ class ElectiveManageScreen extends StatefulWidget {
   const ElectiveManageScreen({super.key, required this.userId});
 
   @override
-  _ElectiveManageScreenState createState() => _ElectiveManageScreenState();
+  _ElectiveCoursesScreenState createState() => _ElectiveCoursesScreenState();
 }
 
-class _ElectiveManageScreenState extends State<ElectiveManageScreen> {
+class _ElectiveCoursesScreenState extends State<ElectiveManageScreen> {
   final SignUpController _signUpController = SignUpController();
   List<ElectiveCourse> _coreCourses = []; // 핵심 교양 과목 리스트
   List<ElectiveCourse> _commonCourses = []; // 공통 교양 과목 리스트
   final List<String> _selectedCoreCourses = []; // 선택된 핵심 교양 저장
   final List<String> _selectedCommonCourses = []; // 선택된 공통 교양 저장
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
     _fetchCourses(); // 과목 목록 가져오기
-    _fetchSelectedCourses(); // 선택된 과목 가져오기
   }
 
   // 과목 목록 가져오는 메소드
@@ -32,26 +33,47 @@ class _ElectiveManageScreenState extends State<ElectiveManageScreen> {
       _coreCourses = await _signUpController.fetchCoreElectives();
       _commonCourses = await _signUpController.fetchCommonElectives();
       setState(() {}); // 상태 업데이트
+
+      // 사용자가 선택한 핵심 교양 가져오기
+      List<String> completedCore =
+          await _apiService.fetchCompletedCore(widget.userId);
+
+      // 앞 6자리로 중복 제거
+      List<String> uniqueCompletedCore = [];
+      Set<String> seen = {};
+
+      for (var major in completedCore) {
+        String prefix = major.length >= 6 ? major.substring(0, 6) : major;
+        if (!seen.contains(prefix)) {
+          seen.add(prefix);
+          uniqueCompletedCore.add(major);
+        }
+      }
+
+      // 사용자가 선택한 공통 교양 가져오기
+      List<String> completedCommon =
+          await _apiService.fetchCompletedCommon(widget.userId);
+
+      // 앞 6자리로 중복 제거
+      List<String> uniqueCompletedCommon = [];
+      Set<String> seenn = {};
+
+      for (var major in completedCommon) {
+        String prefix = major.length >= 6 ? major.substring(0, 6) : major;
+        if (!seenn.contains(prefix)) {
+          seenn.add(prefix);
+          uniqueCompletedCommon.add(major);
+        }
+      }
+
+      setState(() {
+        _selectedCoreCourses.addAll(uniqueCompletedCore);
+        _selectedCommonCourses.addAll(uniqueCompletedCommon);
+        //_selectedElectives.addAll(uniqueCompletedMajors); // 체크된 상태로 초기화
+      });
     } catch (e) {
       // 오류 처리
       print('Error fetching courses: $e');
-    }
-  }
-
-  // 선택된 과목 가져오는 메소드
-  Future<void> _fetchSelectedCourses() async {
-    try {
-      // 사용자가 선택한 핵심 교양 과목 가져오기
-      List<String> selectedCoreCourses = await _signUpController.fetchCompletedCourses(widget.userId, 'core');
-      // 사용자가 선택한 공통 교양 과목 가져오기
-      List<String> selectedCommonCourses = await _signUpController.fetchCompletedCourses(widget.userId, 'common');
-
-      setState(() {
-        _selectedCoreCourses.addAll(selectedCoreCourses);
-        _selectedCommonCourses.addAll(selectedCommonCourses);
-      });
-    } catch (e) {
-      print('Error fetching selected courses: $e');
     }
   }
 
@@ -61,11 +83,7 @@ class _ElectiveManageScreenState extends State<ElectiveManageScreen> {
         widget.userId, _selectedCoreCourses, _selectedCommonCourses);
     if (success) {
       print('선택한 과목이 저장되었습니다: $_selectedCoreCourses, $_selectedCommonCourses');
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-        (route) => false, // 모든 이전 화면 제거
-      );
+      Navigator.pop(context);
     } else {
       print('과목 저장 실패');
     }

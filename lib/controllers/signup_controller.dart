@@ -8,7 +8,7 @@ import 'package:smarttimetable/models/per_info_model.dart';
 import 'package:smarttimetable/models/elective_model.dart';
 import 'package:smarttimetable/models/mj_stid_model.dart';
 //import 'package:smarttimetable/models/user_model.dart'; // SignUp 모델 임포트
-import 'package:smarttimetable/services/api_service.dart';
+import 'package:smarttimetable/Services/api_service.dart';
 
 class SignUpController {
   final Logger _logger = Logger('SIGNCONT');
@@ -186,11 +186,5 @@ class SignUpController {
     } catch (e) {
       throw Exception('Failed to save selected electives: $e'); // 오류 처리
     }
-  }
-
-  // 선택된 과목 가져오는 메소드
-  Future<List<String>> fetchCompletedCourses(String userId, String type) async {
-    return await _apiService.fetchCompletedCourses(
-        userId, type); // ApiService의 메소드 호출
   }
 }

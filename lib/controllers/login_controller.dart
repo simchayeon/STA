@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smarttimetable/services/api_service.dart'; // API 서비스 임포트
+import 'package:smarttimetable/Services/api_service.dart'; // API 서비스 임포트
 import 'package:smarttimetable/models/user_model.dart'; // User 모델 임포트
 import 'package:smarttimetable/Screens/main_page.dart'; // 메인 페이지 임포트
 

@@ -274,8 +274,8 @@ class ApiService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'coreCourses': selectedCoreCourses,
-        'commonCourses': selectedCommonCourses,
+        'coreElectives': selectedCoreCourses,
+        'commonElectives': selectedCommonCourses,
       }),
     );
 
@@ -284,24 +284,57 @@ class ApiService {
     return response.statusCode == 200; // 성공 여부 반환
   }
 
-  // 선택된 과목 가져오는 메소드
-  Future<List<String>> fetchCompletedCourses(String userId, String type) async {
-    final String url = type == 'core'
-        ? '$baseUrl/members/$userId/completedCourseHistoryManagementCore'
-        : '$baseUrl/members/$userId/completedCourseHistoryManagementCommon';
-
-    final response = await http.get(Uri.parse(url));
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
+  // 사용자가 선택한 공통 교양 과목 가져오는 메소드
+  Future<List<String>> fetchCompletedCommon(String userId) async {
+    final response = await http.get(Uri.parse(
+        '$baseUrl/members/$userId/completedCourseHistoryManagementCommon'));
 
     if (response.statusCode == 200) {
+      // 응답 바디를 UTF-8로 디코딩
       String decodedBody = utf8.decode(response.bodyBytes);
-      List<dynamic> jsonData = json.decode(decodedBody);
-      return List<String>.from(jsonData);
+      print('Response body: $decodedBody'); // 응답 로그 출력
+
+      // 응답이 비어 있는 경우 빈 리스트 반환
+      if (decodedBody.isEmpty) {
+        return []; // 빈 리스트 반환
+      }
+      try {
+        List<dynamic> jsonData = json.decode(decodedBody);
+        return List<String>.from(jsonData); // 교양 과목 이름 리스트 반환
+      } catch (e) {
+        print('JSON parsing error: $e');
+        throw Exception('Failed to parse completed common courses');
+      }
     } else {
-      print('Error: ${response.statusCode} - ${response.body}');
-      throw Exception('Failed to load completed courses');
+      print('Error: ${response.statusCode} - ${response.body}'); // 에러 로그 출력
+      throw Exception('Failed to load completed majors');
+    }
+  }
+
+  // 사용자가 선택한 핵심 교양 과목 가져오는 메소드
+  Future<List<String>> fetchCompletedCore(String userId) async {
+    final response = await http.get(Uri.parse(
+        '$baseUrl/members/$userId/completedCourseHistoryManagementCore'));
+
+    if (response.statusCode == 200) {
+      // 응답 바디를 UTF-8로 디코딩
+      String decodedBody = utf8.decode(response.bodyBytes);
+      print('Response body: $decodedBody'); // 응답 로그 출력
+
+      // 응답이 비어 있는 경우 빈 리스트 반환
+      if (decodedBody.isEmpty) {
+        return []; // 빈 리스트 반환
+      }
+      try {
+        List<dynamic> jsonData = json.decode(decodedBody);
+        return List<String>.from(jsonData); // 교양 과목 이름 리스트 반환
+      } catch (e) {
+        print('JSON parsing error: $e');
+        throw Exception('Failed to parse completed core courses');
+      }
+    } else {
+      print('Error: ${response.statusCode} - ${response.body}'); // 에러 로그 출력
+      throw Exception('Failed to load completed majors');
     }
   }
 
@@ -372,6 +405,38 @@ class ApiService {
       _logger.severe(
           'Failed to load password: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to find password: ${response.body}'); // 에러 메시지 개선
+    }
+  }
+
+  // 아이디 중복 확인
+  Future<bool> checkIdExists(String userId) async {
+    final response =
+        await http.get(Uri.parse('$baseUrl/members/checkId?id=$userId'));
+
+    if (response.statusCode == 200) {
+      // 서버에서 사용 가능한 아이디 메시지를 반환
+      //return response.body == "사용 가능한 아이디입니다."; // 응답 메시지 확인
+      return false;
+    } else if (response.statusCode == 409) {
+      // 아이디가 이미 존재하는 경우
+      return true; // 이미 존재하는 아이디
+    } else {
+      throw Exception('아이디 중복 확인 실패');
+    }
+  }
+
+  // 회원 탈퇴
+  Future<void> withdrawMembership(String userId) async {
+    final response = await http
+        .delete(Uri.parse('$baseUrl/members/$userId/withdrawalOfMembership'));
+
+    if (response.statusCode == 204) {
+      // 탈퇴 성공
+      return;
+    } else if (response.statusCode == 404) {
+      throw Exception('회원이 존재하지 않습니다.');
+    } else {
+      throw Exception('회원 탈퇴 실패: ${response.statusCode}');
     }
   }
 }
