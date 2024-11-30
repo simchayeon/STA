@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
+import 'package:smarttimetable/models/addmajor_model.dart';
 import 'package:smarttimetable/models/mypage_model.dart';
 import 'package:smarttimetable/models/subject_model.dart';
 import 'package:smarttimetable/models/elective_model.dart';
@@ -162,6 +163,75 @@ class ApiService {
     _logger.info('Login Response: ${response.statusCode}'); // 응답 상태 코드 출력
     return response.statusCode == 200; // 로그인 성공 여부 반환
   }
+
+
+// (영빈) 시간표 수정화면에서 전공 목록 가져오기
+  Future<List<AddMajor>> fetchAddMajors() async {
+    _logger.info('Fetching addMajors...'); // 전공 목록 요청 시작 로그
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/subjects/majors'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      String decodeBody = utf8.decode(response.bodyBytes);
+      List<dynamic> jsonData = json.decode(decodeBody); // JSON 리스트 파싱
+      _logger.info('AddMajors fetched successfully: ${response.statusCode}');
+      return AddMajor.fromJsonList(jsonData); // 리스트 변환
+    } else {
+      _logger.severe('Failed to fetch addMajors: ${response.statusCode}');
+      throw Exception('Failed to load addMajors');
+    }
+  }
+
+// (영빈) 시간표 수정화면에서 핵심교양 목록 가져오기
+  Future<List<AddMajor>> fetchCore() async {
+    _logger.info('Fetching addMajors...'); // 전공 목록 요청 시작 로그
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/subjects/coreElectives'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      String decodeBody = utf8.decode(response.bodyBytes);
+      List<dynamic> jsonData = json.decode(decodeBody); // JSON 리스트 파싱
+      _logger.info('core fetched successfully: ${response.statusCode}');
+      return AddMajor.fromJsonList(jsonData); // 리스트 변환
+    } else {
+      _logger.severe('Failed to fetch core: ${response.statusCode}');
+      throw Exception('Failed to load core');
+    }
+  }
+
+  // (영빈) 시간표 수정화면에서 공통교양 목록 가져오기
+  Future<List<AddMajor>> fetchCommon() async {
+    _logger.info('Fetching addMajors...'); // 전공 목록 요청 시작 로그
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/subjects/commonElectives'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      String decodeBody = utf8.decode(response.bodyBytes);
+      List<dynamic> jsonData = json.decode(decodeBody); // JSON 리스트 파싱
+      _logger.info('common fetched successfully: ${response.statusCode}');
+      return AddMajor.fromJsonList(jsonData); // 리스트 변환
+    } else {
+      _logger.severe('Failed to fetch common: ${response.statusCode}');
+      throw Exception('Failed to load common');
+    }
+  }
+
+
 
   // 전공 목록 가져오기
   Future<List<Major>> fetchMajors() async {

@@ -1,7 +1,36 @@
+import 'dart:convert'; // For JSON decoding
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:smarttimetable/Screens/info_screen.dart';
 import 'package:smarttimetable/Screens/mypage_screen.dart';
-import 'package:smarttimetable/Screens/timetable_add.dart';
+import 'package:smarttimetable/Services/api_service.dart';
+import 'package:smarttimetable/models/addmajor_model.dart';
+
+class Subject {
+  final String id;
+  final String name;
+
+  Subject({
+    required this.id,
+    required this.name,
+  });
+
+  // Factory method to convert JSON into Subject object
+  factory Subject.fromJson(Map<String, dynamic> json) {
+    return Subject(
+      id: json['id'] as String,
+      name: json['name'] as String,
+    );
+  }
+
+  // Convert Subject object to JSON for sending to the server
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
+  }
+}
 
 class TimetableAdd extends StatefulWidget {
   const TimetableAdd({super.key});
@@ -11,39 +40,22 @@ class TimetableAdd extends StatefulWidget {
 }
 
 class _TimetableAddState extends State<TimetableAdd> {
+  final apiService = ApiService(); // ApiService 객체 생성
+
+  // 검색 옵션
   final List<String> _searchOptions = [
     '과목명으로 검색',
     '교강사명으로 검색',
     '강좌번호로 검색',
   ];
-  String _selectedSearchOption = '과목명으로 검색'; // 기본 선택값 설정
+  String _selectedSearchOption = '과목명으로 검색'; // 기본 선택값
   String _searchText = ''; // 검색어 저장 변수
 
-  // 전체 과목 리스트
-  final List<String> _subjects = [
-    '전공 실기6(성악)',
-    '전공 실기5(피아노)',
-    '전공 실기4(기타)',
-    '컴퓨터 보안'
-  ];
-
-  // 검색 결과 리스트
-  List<String> _filteredSubjects = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredSubjects = _subjects; // 초기 상태로 전체 리스트를 표시
-  }
-
-  void _filterSubjects(String query) {
-    setState(() {
-      _searchText = query;
-      _filteredSubjects =
-          _subjects.where((subject) => subject.contains(query)).toList();
-    });
-  }
-
+  // 각 카테고리별 과목 리스트
+  List<AddMajor> _majors = [];
+  List<AddMajor> _coreElectives = [];
+  List<AddMajor> _commonElectives = [];
+  List<AddMajor> _filteredSubjects = []; // 화면에 보여줄 리스트
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +77,7 @@ class _TimetableAddState extends State<TimetableAdd> {
                       labelText: '과목명을 검색하세요',
                     ),
                     onChanged: (value) {
-                      _filterSubjects(value);
+                      //_filterSubjects(value);
                     },
                   ),
                 ),
@@ -81,13 +93,14 @@ class _TimetableAddState extends State<TimetableAdd> {
                   onChanged: (newValue) {
                     setState(() {
                       _selectedSearchOption = newValue!;
+                      //_filterSubjects(_searchText);
                     });
                   },
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
-                    _filterSubjects(_searchText);
+                    //_filterSubjects(_searchText);
                   },
                   child: const Text('검색'),
                 ),
@@ -98,71 +111,97 @@ class _TimetableAddState extends State<TimetableAdd> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CategoryOptionsScreen(
-                        category: '전공',
-                        options: ['컴퓨터공학과', '전자공학과'],
-                      ),
-                    ),
-                  );
+                onPressed: () async {
+                  final majors = await apiService.fetchAddMajors();
+                  setState(() {
+                    _filteredSubjects = majors;
+                    print('UI 업데이트 - _filteredSubjects: $_filteredSubjects');
+                  });
                 },
                 child: const Text('전공'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CategoryOptionsScreen(
-                        category: '공통교양',
-                        options: ['기독교', '사고와 표현', '언어', '진로와 디지털러시'],
-                      ),
-                    ),
-                  );
+                onPressed: () async {
+                  List<AddMajor> commonElectives =
+                      await apiService.fetchCommon();
+                  setState(() {
+                    _filteredSubjects = commonElectives;
+                  });
                 },
                 child: const Text('공통교양'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CategoryOptionsScreen(
-                        category: '핵심교양',
-                        options: ['역사와 철학', '사회와 공동체'],
-                      ),
-                    ),
-                  );
+                onPressed: () async {
+                  List<AddMajor> coreElectives = await apiService.fetchCore();
+                  setState(() {
+                    _filteredSubjects = coreElectives;
+                  });
                 },
                 child: const Text('핵심교양'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CategoryOptionsScreen(
-                        category: '일반교양',
-                        options: ['말하기', '글쓰기'],
-                      ),
-                    ),
-                  );
-                },
-                child: const Text('일반교양'),
               ),
             ],
           ),
           Expanded(
-            child: ListView(
-              children: _filteredSubjects.map((subject) {
-                return ListTile(
-                  title: Text(subject),
-                );
-              }).toList(),
-            ),
+            child: _filteredSubjects.isEmpty
+                ? const Center(child: Text('No subjects available.'))
+                : ListView.builder(
+                    itemCount: _filteredSubjects.length,
+                    itemBuilder: (context, index) {
+                      final subject = _filteredSubjects[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          title: Text(
+                            subject.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('강의 시간: ${subject.classTime}'),
+                              Text('교수 이름: ${subject.professor}'),
+                              Text('강의 번호: ${subject.lectureNumber}'),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.arrow_forward_ios),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(subject.name),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('강의 시간: ${subject.classTime}'),
+                                        Text('교수 이름: ${subject.professor}'),
+                                        Text('강의 번호: ${subject.lectureNumber}'),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('닫기'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -208,8 +247,9 @@ class _TimetableAddState extends State<TimetableAdd> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) =>
-                              const MyPageScreen(userId: '임시')));
+                          builder: (content) => const MyPageScreen(
+                                userId: '임시',
+                              )));
                 },
               ),
             ],
