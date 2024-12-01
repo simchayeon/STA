@@ -40,4 +40,14 @@ class AddMajor {
   String toString() {
     return 'AddMajor(classTime: $classTime, name: $name, professor: $professor, lectureNumber: $lectureNumber)';
   }
+
+  // JSON 데이터를 AddMajor 객체로 변환하는 메서드
+  factory AddMajor.fromJson(Map<String, dynamic> json) {
+    return AddMajor(
+      name: json['name'] as String,
+      classTime: json['classTime'] as String,
+      professor: json['professor'] as String,
+      lectureNumber: json['lectureNumber'] as String,
+    );
+  }
 }

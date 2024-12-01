@@ -162,17 +162,26 @@ class _InfoScreenState extends State<InfoScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _launchURL('https://core-courses-website.com'),
+              onPressed: () =>
+                  _launchURL('https://www.mju.ac.kr/bangmok/1650/subview.do#'),
               child: const Text('핵심교양 확인'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _launchURL('https://common-courses-website.com'),
+              onPressed: () =>
+                  _launchURL('https://www.mju.ac.kr/bangmok/1649/subview.do'),
               child: const Text('공통교양 확인'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _launchURL('https://curriculum-website.com'),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CurriculumImageScreen(
+                      imagePath:
+                          '/Users/simchaeyeon/smarttimetable/assets/img/majors.png'),
+                ),
+              ),
               child: const Text('학과별 커리큘럼'),
             ),
           ],
@@ -203,8 +212,9 @@ class _InfoScreenState extends State<InfoScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (content) =>
-                              const TimetableAdd())); // 사용자 ID 전달
+                          builder: (content) => TimetableAdd(
+                                userId: widget.userId,
+                              ))); // 사용자 ID 전달
                 },
               ),
               IconButton(
@@ -242,5 +252,36 @@ class _InfoScreenState extends State<InfoScreen> {
     } else {
       throw 'Could not launch $url';
     }
+  }
+}
+
+class CurriculumImageScreen extends StatelessWidget {
+  final String imagePath;
+
+  const CurriculumImageScreen({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('학과별 커리큘럼'),
+        backgroundColor: Colors.orange,
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          boundaryMargin: const EdgeInsets.all(20.0),
+          minScale: 0.5, // 최소 확대 배율
+          maxScale: 4.0, // 최대 확대 배율
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 1.5, // 화면 너비의 80%
+            height: MediaQuery.of(context).size.height * 1.5, // 화면 높이의 80%
+            child: Image.asset(
+              imagePath,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

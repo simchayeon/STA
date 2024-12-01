@@ -16,15 +16,20 @@ class ApiService {
 
   // 백엔드 URL 설정
   static const String baseUrl =
-      'https://6c16-117-17-163-57.ngrok-free.app'; // 기본 주소
+      'https://ff08-2001-e60-929d-de4a-e598-237c-a4ed-93d7.ngrok-free.app'; // 기본 주소
 
   // 홈 화면 (메인 페이지) 정보 받는 메소드
   Future<List<Subject>> fetchCurrentSubjects(String userId) async {
-    final response =
-        await http.get(Uri.parse('$baseUrl/members/$userId/current-subjects'));
+    final response = await http.get(
+      Uri.parse('$baseUrl/members/$userId/current-subjects'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8', // UTF-8 지정
+      },
+    );
 
     if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
+      List<dynamic> jsonData =
+          json.decode(utf8.decode(response.bodyBytes)); // UTF-8로 디코딩
 
       // JSON 데이터가 비어있는 경우 빈 리스트 반환
       if (jsonData.isEmpty) {
@@ -34,6 +39,31 @@ class ApiService {
       return jsonData.map((json) => Subject.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load subjects');
+    }
+  }
+
+  // 수업 삭제 메소드 추가
+  Future<void> deleteSubject(String userId, String subjectName) async {
+    final url = '$baseUrl/members/$userId/delete-current-subject';
+
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'subjectName': subjectName}),
+      );
+
+      if (response.statusCode == 200) {
+        _logger.info('Subject deleted successfully: $subjectName');
+      } else {
+        _logger.severe('Failed to delete subject: ${response.body}');
+        throw Exception('Failed to delete subject');
+      }
+    } catch (e) {
+      _logger.severe('Error deleting subject: $e');
+      rethrow;
     }
   }
 
@@ -165,6 +195,58 @@ class ApiService {
   }
 
 
+  //(영빈)전공 추천 과목 띄우기
+  Future<List<AddMajor>> fetchRecommendedMajor(String userId) async {
+    final url = Uri.parse('$baseUrl/members/$userId/recommendedMajorSubjects');
+    try {
+      final response = await http.post(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => AddMajor.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load recommended majors');
+      }
+    } catch (e) {
+      print('Error fetching recommended majors: $e');
+      throw e;
+    }
+  }
+
+  //(영빈)공통교양 추천 과목 띄우기
+  Future<List<AddMajor>> fetchRecommendedCommon(String userId) async {
+    final url = Uri.parse('$baseUrl/members/$userId/recommendedCommonSubjects');
+    try {
+      final response = await http.post(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => AddMajor.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load recommended common');
+      }
+    } catch (e) {
+      print('Error fetching recommended common: $e');
+      throw e;
+    }
+  }
+
+  //(영빈)핵심교양 추천 과목 띄우기
+  Future<List<AddMajor>> fetchRecommendedCore(String userId) async {
+    final url = Uri.parse('$baseUrl/members/$userId/recommendedCoreSubjects');
+    try {
+      final response = await http.post(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => AddMajor.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load recommended core');
+      }
+    } catch (e) {
+      print('Error fetching recommended core: $e');
+      throw e;
+    }
+  }
+
+
 // (영빈) 시간표 수정화면에서 전공 목록 가져오기
   Future<List<AddMajor>> fetchAddMajors() async {
     _logger.info('Fetching addMajors...'); // 전공 목록 요청 시작 로그
@@ -231,7 +313,27 @@ class ApiService {
     }
   }
 
+  //(영빈) 시간표 수정화면에서 전체 과목 목록 가져오기
+  Future<List<AddMajor>> fetchAllSubjects() async {
+    _logger.info('Fetching allsubjects...'); // 전공 목록 요청 시작 로그
 
+    final response = await http.get(
+      Uri.parse('$baseUrl/subjects/allReturnSubjects'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      String decodeBody = utf8.decode(response.bodyBytes);
+      List<dynamic> jsonData = json.decode(decodeBody); // JSON 리스트 파싱
+      _logger.info('common fetched successfully: ${response.statusCode}');
+      return AddMajor.fromJsonList(jsonData); // 리스트 변환
+    } else {
+      _logger.severe('Failed to fetch common: ${response.statusCode}');
+      throw Exception('Failed to load common');
+    }
+  }
 
   // 전공 목록 가져오기
   Future<List<Major>> fetchMajors() async {

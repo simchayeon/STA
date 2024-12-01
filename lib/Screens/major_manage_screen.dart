@@ -42,7 +42,7 @@ class _MajorManageScreenState extends State<MajorManageScreen> {
       Set<String> seen = {};
 
       for (var major in completedMajors) {
-        String prefix = major.length >= 6 ? major.substring(0, 6) : major;
+        String prefix = major.length >= 10 ? major.substring(0, 10) : major;
         if (!seen.contains(prefix)) {
           seen.add(prefix);
           uniqueCompletedMajors.add(major);
