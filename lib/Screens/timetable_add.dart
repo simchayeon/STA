@@ -37,8 +37,9 @@ class _TimetableAddState extends State<TimetableAdd> {
 
   String _searchText = ''; // 검색어 저장 변수
   List<AddMajor> _filteredSubjects = []; // 화면에 보여줄 리스트
+  Map<String, List<AddMajor>> _filteredRecommendedSubjects = {};
 
-//Map<String, List<AddMajor>> _groupedSubjects = {};
+  Map<String, List<AddMajor>> _groupedRecommendedSubjects = {};
 
   // 각 카테고리별 과목 리스트
   /*List<AddMajor> _majors = [];
@@ -87,6 +88,53 @@ class _TimetableAddState extends State<TimetableAdd> {
       grouped[subjectNameWithoutBrackets]!.add(subject);
     }
     return grouped;
+  }
+
+  // 추천과목을 이름별로 그룹화하는 메서드
+  Map<String, List<AddMajor>> _groupRecommendedSubjects(
+      Map<String, List<AddMajor>> recommendedsubjects) {
+    Map<String, List<AddMajor>> grouped = {};
+    // recommendedSubjects의 각 엔트리를 순회
+    for (var entry in recommendedsubjects.entries) {
+      // 각 엔트리의 value(List<AddMajor>)를 순회
+      for (var subject in entry.value) {
+        // name에서 괄호를 제거한 이름을 가져오기
+        final subjectNameWithoutBrackets =
+            _getSubjectNameWithoutBrackets(subject.name);
+
+        // 해당 이름으로 그룹화
+        if (!grouped.containsKey(subjectNameWithoutBrackets)) {
+          grouped[subjectNameWithoutBrackets] = [];
+        }
+        grouped[subjectNameWithoutBrackets]!.add(subject);
+      }
+    }
+
+    return grouped;
+  }
+
+  // 추천 과목 API에서 받은 데이터를 화면에 표시
+  void _updateRecommendedSubjects(
+      Map<String, List<AddMajor>> recommendedSubjects) {
+    setState(() {
+      _filteredRecommendedSubjects = recommendedSubjects;
+      _groupedRecommendedSubjects =
+          _groupRecommendedSubjects(recommendedSubjects);
+    });
+  }
+
+// 추천 과목 데이터를 가져오는 메서드
+  Future<void> _loadRecommendedSubjects(
+      Future<Map<String, List<AddMajor>>> Function() fetchFunction) async {
+    try {
+      final recommendedSubjects = await fetchFunction();
+      _updateRecommendedSubjects(recommendedSubjects);
+    } catch (e) {
+      print("Error loading recommended subjects: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('추천 과목을 가져오는 데 실패했습니다.')),
+      );
+    }
   }
 
 //검색 필터링 메서드
@@ -187,6 +235,56 @@ class _TimetableAddState extends State<TimetableAdd> {
       isSearchActive = true; // 검색 버튼 클릭 시 활성화
     });
     _filterSubjects(); // 검색 후 필터링
+  }
+
+// 추천 과목 리스트 위젯
+  Widget _buildRecommendedSubjectsList() {
+    return _groupedRecommendedSubjects.isEmpty
+        ? const Center(child: Text('추천 과목이 없습니다.'))
+        : ListView.builder(
+            itemCount: _groupedRecommendedSubjects.keys.length,
+            itemBuilder: (context, index) {
+              final subjectName =
+                  _groupedRecommendedSubjects.keys.elementAt(index);
+              final subjects = _groupedRecommendedSubjects[subjectName]!;
+              return ExpansionTile(
+                title: Text(subjectName),
+                children: subjects.map((subject) {
+                  return ListTile(
+                    title: Text(subject.name),
+                    subtitle: Text('강의 시간: ${subject.classTime}'),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text(subject.name),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('강의 시간: ${subject.classTime}'),
+                                Text('교수: ${subject.professor}'),
+                                Text('강의 번호: ${subject.lectureNumber}'),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  _selectedSubject = subject;
+                                  _addSubject();
+                                },
+                                child: const Text('과목추가'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+                }).toList(),
+              );
+            },
+          );
   }
 
   @override
@@ -294,38 +392,39 @@ class _TimetableAddState extends State<TimetableAdd> {
                 ],
               ),
               const SizedBox(height: 5),
+              // 추천 버튼과 관련된 UI 수정
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      final recommededMajors =
+                      final recommendedmajors =
                           await apiService.fetchRecommendedMajor(widget.userId);
                       setState(() {
-                        _filteredSubjects = recommededMajors;
-                        _groupedSubjects = _groupSubjects(recommededMajors);
+                        _filteredSubjects = recommendedmajors;
+                        _groupedSubjects = _groupSubjects(recommendedmajors);
                       });
                     },
                     child: const Text('추천전공'),
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      final recommededCommon = await apiService
+                      final recommendedcommon = await apiService
                           .fetchRecommendedCommon(widget.userId);
                       setState(() {
-                        _filteredSubjects = recommededCommon;
-                        _groupedSubjects = _groupSubjects(recommededCommon);
+                        _filteredSubjects = recommendedcommon;
+                        _groupedSubjects = _groupSubjects(recommendedcommon);
                       });
                     },
                     child: const Text('추천공통교양'),
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      final recommededCore =
+                      final recommendedcore =
                           await apiService.fetchRecommendedCore(widget.userId);
                       setState(() {
-                        _filteredSubjects = recommededCore;
-                        _groupedSubjects = _groupSubjects(recommededCore);
+                        _filteredSubjects = recommendedcore;
+                        _groupedSubjects = _groupSubjects(recommendedcore);
                       });
                     },
                     child: const Text('추천핵심교양'),

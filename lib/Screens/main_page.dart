@@ -112,8 +112,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
                                   _controller.showSubjectDialog(
                                       context, courseName, () async {
                                     await _deleteClass(index);
-                                    if (mounted) {
-                                      setState(() {});
+                                    if(mounted) {
+                                      setState((){});
                                     }
                                   });
                                 }

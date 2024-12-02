@@ -194,58 +194,86 @@ class ApiService {
     return response.statusCode == 200; // 로그인 성공 여부 반환
   }
 
-
-  //(영빈)전공 추천 과목 띄우기
+  // (영빈) 추천 전공 과목 리스트 가져오기
   Future<List<AddMajor>> fetchRecommendedMajor(String userId) async {
     final url = Uri.parse('$baseUrl/members/$userId/recommendedMajorSubjects');
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => AddMajor.fromJson(json)).toList();
+        final decodedResponse = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> data = jsonDecode(decodedResponse);
+
+        List<AddMajor> majorSubjects = [];
+        data.forEach((key, value) {
+          if (value is List) {
+            majorSubjects.addAll(
+                (value).map((item) => AddMajor.fromJson(item)).toList());
+          }
+        });
+
+        return majorSubjects; // 하나의 리스트로 반환
       } else {
         throw Exception('Failed to load recommended majors');
       }
     } catch (e) {
       print('Error fetching recommended majors: $e');
-      throw e;
+      rethrow;
     }
   }
 
-  //(영빈)공통교양 추천 과목 띄우기
+// (영빈) 추천 공통 교양 과목 리스트 가져오기
   Future<List<AddMajor>> fetchRecommendedCommon(String userId) async {
     final url = Uri.parse('$baseUrl/members/$userId/recommendedCommonSubjects');
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => AddMajor.fromJson(json)).toList();
+        final decodedResponse = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> data = jsonDecode(decodedResponse);
+
+        List<AddMajor> commonSubjects = [];
+        data.forEach((key, value) {
+          if (value is List) {
+            commonSubjects.addAll(
+                (value).map((item) => AddMajor.fromJson(item)).toList());
+          }
+        });
+
+        return commonSubjects; // 하나의 리스트로 반환
       } else {
         throw Exception('Failed to load recommended common');
       }
     } catch (e) {
       print('Error fetching recommended common: $e');
-      throw e;
+      rethrow;
     }
   }
 
-  //(영빈)핵심교양 추천 과목 띄우기
+// (영빈) 추천 핵심 교양 과목 리스트 가져오기
   Future<List<AddMajor>> fetchRecommendedCore(String userId) async {
     final url = Uri.parse('$baseUrl/members/$userId/recommendedCoreSubjects');
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => AddMajor.fromJson(json)).toList();
+        final decodedResponse = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> data = jsonDecode(decodedResponse);
+
+        List<AddMajor> coreSubjects = [];
+        data.forEach((key, value) {
+          if (value is List) {
+            coreSubjects.addAll(
+                (value).map((item) => AddMajor.fromJson(item)).toList());
+          }
+        });
+
+        return coreSubjects; // 하나의 리스트로 반환
       } else {
         throw Exception('Failed to load recommended core');
       }
     } catch (e) {
       print('Error fetching recommended core: $e');
-      throw e;
+      rethrow;
     }
   }
-
 
 // (영빈) 시간표 수정화면에서 전공 목록 가져오기
   Future<List<AddMajor>> fetchAddMajors() async {

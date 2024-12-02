@@ -27,8 +27,8 @@ class TimetableController extends ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
-  void showSubjectDialog(BuildContext context, String courseName,
-      Future<void> Function() onDelete) {
+  void showSubjectDialog(
+      BuildContext context, String courseName, Future<void> Function() onDelete) {
     // 과목 이름으로 Subject 찾기
     Subject? subject = subjects.firstWhere(
       (s) => s.name == courseName,
@@ -66,15 +66,15 @@ class TimetableController extends ChangeNotifier {
                 await onDelete(); // 과목 이름으로 삭제
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 // 상태가 여전히 활성화되어 있는지 확인
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => TimetableScreen(userId: userId),
-                    ),
-                  );
-                }
-              },
-            ),
+              if (context.mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => TimetableScreen(userId: userId),
+                  ),
+                );
+              }
+            },
+          ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
