@@ -128,7 +128,15 @@ class _TimetableAddState extends State<TimetableAdd> {
       Future<Map<String, List<AddMajor>>> Function() fetchFunction) async {
     try {
       final recommendedSubjects = await fetchFunction();
-      _updateRecommendedSubjects(recommendedSubjects);
+
+      // 추천 과목이 없을 경우 처리
+      if (recommendedSubjects.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('추천할 과목이 없습니다.')),
+        );
+      } else {
+        _updateRecommendedSubjects(recommendedSubjects);
+      }
     } catch (e) {
       print("Error loading recommended subjects: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -252,7 +260,8 @@ class _TimetableAddState extends State<TimetableAdd> {
                 children: subjects.map((subject) {
                   return ListTile(
                     title: Text(subject.name),
-                    subtitle: Text('강의 시간: ${subject.classTime}'),
+                    subtitle:
+                        Text('${subject.classTime}  ${subject.professor}'),
                     onTap: () {
                       showDialog(
                         context: context,
@@ -261,6 +270,9 @@ class _TimetableAddState extends State<TimetableAdd> {
                             title: Text(subject.name),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start, // 왼쪽 정렬
+
                               children: [
                                 Text('강의 시간: ${subject.classTime}'),
                                 Text('교수: ${subject.professor}'),
@@ -449,7 +461,8 @@ class _TimetableAddState extends State<TimetableAdd> {
                             children: subjects.map((subject) {
                               return ListTile(
                                 title: Text(subject.name),
-                                subtitle: Text('강의 시간: ${subject.classTime}'),
+                                subtitle: Text(
+                                    '${subject.classTime}  ${subject.professor}'),
                                 onTap: () {
                                   showDialog(
                                     context: context,
@@ -458,6 +471,9 @@ class _TimetableAddState extends State<TimetableAdd> {
                                         title: Text(subject.name),
                                         content: Column(
                                           mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start, // 왼쪽 정렬
+
                                           children: [
                                             Text('강의 시간: ${subject.classTime}'),
                                             Text('교수: ${subject.professor}'),
@@ -489,7 +505,8 @@ class _TimetableAddState extends State<TimetableAdd> {
                       final subject = _filteredSubjects[index];
                       return ListTile(
                         title: Text(subject.name),
-                        subtitle: Text('강의 시간: ${subject.classTime}'),
+                        subtitle:
+                            Text('${subject.classTime}  ${subject.professor}'),
                         onTap: () {
                           showDialog(
                             context: context,
@@ -498,6 +515,9 @@ class _TimetableAddState extends State<TimetableAdd> {
                                 title: Text(subject.name),
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start, // 왼쪽 정렬
+
                                   children: [
                                     Text('강의 시간: ${subject.classTime}'),
                                     Text('교수: ${subject.professor}'),

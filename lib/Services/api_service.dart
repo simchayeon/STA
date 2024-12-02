@@ -212,6 +212,8 @@ class ApiService {
         });
 
         return majorSubjects; // 하나의 리스트로 반환
+      } else if (response.statusCode == 204) {
+        return [];
       } else {
         throw Exception('Failed to load recommended majors');
       }
@@ -239,6 +241,8 @@ class ApiService {
         });
 
         return commonSubjects; // 하나의 리스트로 반환
+      } else if (response.statusCode == 204) {
+        return [];
       } else {
         throw Exception('Failed to load recommended common');
       }
@@ -266,6 +270,8 @@ class ApiService {
         });
 
         return coreSubjects; // 하나의 리스트로 반환
+      } else if (response.statusCode == 204) {
+        return [];
       } else {
         throw Exception('Failed to load recommended core');
       }
