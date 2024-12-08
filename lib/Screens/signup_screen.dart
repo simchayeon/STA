@@ -110,7 +110,7 @@ class _SignUpPageState extends State<SignUpPage> {
         title: const Text('회원가입'),
         backgroundColor: Colors.orange,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween, // 위와 아래 공간 공유

@@ -189,6 +189,54 @@ class _TimetableAddState extends State<TimetableAdd> {
     _filterSubjects(); // 필터링 실행
   }
 
+// 시간 중복 검사 함수
+  bool _checkTimeConflict(
+      List<AddMajor> existingSubjects, String newDay, String newTimeRange) {
+    for (final subject in existingSubjects) {
+      final regex = RegExp(r"([\w가-힣]+)\((\d{4}-\d{4})\)");
+      final match = regex.firstMatch(subject.classTime);
+      if (match != null) {
+        final existingDay = match.group(1)!;
+        final existingTimeRange = match.group(2)!;
+
+        if (existingDay == newDay) {
+          // 시간 겹치는지 확인
+          final existingTimes =
+              existingTimeRange.split('-').map(int.parse).toList();
+          final newTimes = newTimeRange.split('-').map(int.parse).toList();
+
+          if (!(newTimes[1] <= existingTimes[0] ||
+              newTimes[0] >= existingTimes[1])) {
+            // 시간 범위가 겹침
+            print("시간 겹침 발견: $existingDay, $existingTimeRange");
+            return true;
+          }
+        }
+      }
+    }
+    return false; // 겹치지 않음
+  }
+
+// 특정 시간 문자열이 겹치는지 확인하는 함수
+  bool _isTimeOverlap(
+      String day1, String timeRange1, String day2, String timeRange2) {
+    if (day1 != day2) {
+      print("요일이 다릅니다: $day1 vs $day2");
+      return false; // 요일이 다르면 겹치지 않음
+    }
+
+    // 시간 범위를 파싱
+    final start1 = int.parse(timeRange1.split('-')[0]); // 시작 시간 (예: 1500)
+    final end1 = int.parse(timeRange1.split('-')[1]); // 종료 시간 (예: 1750)
+    final start2 = int.parse(timeRange2.split('-')[0]);
+    final end2 = int.parse(timeRange2.split('-')[1]);
+
+    print("시간 비교: $start1-$end1 vs $start2-$end2");
+
+    // 시간이 겹치는지 확인
+    return !(end1 <= start2 || start1 >= end2); // 겹치면 true
+  }
+
 // 과목 추가 요청을 보내는 메서드
   Future<void> _addSubjectToBackend(AddMajor subject) async {
     final url = Uri.parse(
@@ -223,17 +271,100 @@ class _TimetableAddState extends State<TimetableAdd> {
         const SnackBar(content: Text('오류가 발생했습니다.')),
       );
     }
+    
   }
 
-  // 과목 추가 버튼 클릭 시
-  void _addSubject() {
-    if (_selectedSubject != null) {
-      _addSubjectToBackend(_selectedSubject!); // 백엔드에 추가 요청
-      Navigator.pop(context, _selectedSubject); // 이전 화면으로 이동
-    } else {
+// 과목 추가 버튼 클릭 시
+  Future<void> _addSubject() async {
+    if (_selectedSubject == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('추가할 과목을 선택하세요.')),
       );
+      print("과목이 선택되지 않음");
+      return;
+    } else {
+      // _selectedSubject의 정보를 출력
+      print(
+          "Selected Subject: ${_selectedSubject!.name}"); /*
+    print("Class Time: ${_selectedSubject!.classTime}");
+    print("Professor: ${_selectedSubject!.professor}");
+    print("Lecture Number: ${_selectedSubject!.lectureNumber}");*/
+    }
+
+    // 사용자 선택 과목의 요일 및 시간 범위 추출
+    final regex = RegExp(r"([\w가-힣]+)\((\d{4}-\d{4})\)");
+    print("Raw classTime: '${_selectedSubject!.classTime}'");
+
+    final match = regex.firstMatch(_selectedSubject!.classTime);
+    if (match == null) {
+      print("정규식 매칭 실패. 확인 필요: '${_selectedSubject!.classTime}'");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('선택한 과목의 시간 정보가 잘못되었습니다.')),
+      );
+      return;
+    }
+
+    final newDay = match.group(1)!; // 요일 (예: "화")
+    final newTimeRange = match.group(2)!; // 시간 범위 (예: "1500-1750")
+
+    print(
+        "Processing class: ${_selectedSubject!.name}, Day: $newDay, Time Range: $newTimeRange");
+
+    try {
+      // 기존 과목 목록 가져오기
+      List<dynamic> existingSubjects = await _controller.fetchSubjects() ?? [];
+      print(
+          "Fetched subjects from api: ${existingSubjects.map((s) => s.classTime).toList()}");
+
+      // 중복 시간 확인
+      bool hasConflict = existingSubjects.any((subject) {
+        final existingMatch = regex.firstMatch(subject.classTime);
+        print("여기까지는 됨");
+        if (existingMatch != null) {
+          final existingDay = existingMatch.group(1)!;
+          final existingTimeRange = existingMatch.group(2)!;
+          print("여기두개까지도 됨");
+
+          // 시간이 겹치는지 확인
+          bool overlap = _isTimeOverlap(
+              existingDay, existingTimeRange, newDay, newTimeRange);
+          print(
+              "Overlap check: $existingDay, $existingTimeRange vs $newDay, $newTimeRange -> $overlap");
+          return overlap;
+        }
+        return false;
+      });
+
+      if (hasConflict) {
+        print("시간 중복 발생: 과목 추가 안됨");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('시간이 중복됩니다. 다른 과목을 선택하세요.')),
+        );
+        return;
+      }
+
+      // 중복이 없으면 추가 진행
+      await _addSubjectToBackend(_selectedSubject!);
+      
+
+      // 상태 업데이트
+      setState(() {
+        _filteredSubjects.add(_selectedSubject!);
+        _groupedSubjects = _groupSubjects(_filteredSubjects);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('과목이 성공적으로 추가되었습니다.')),
+      );
+
+      Navigator.pop(context); // 이전 화면으로 이동
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('과목 추가 중 오류 발생: $e')),
+      );
+      print("과목 추가 실패: $e");
+      print("Selected Subject: ${_selectedSubject!.name}");
+      print("Raw classTime: '${_selectedSubject!.classTime}'");
     }
   }
 
@@ -247,7 +378,7 @@ class _TimetableAddState extends State<TimetableAdd> {
 
 // 추천 과목 리스트 위젯
   Widget _buildRecommendedSubjectsList() {
-    return _groupedRecommendedSubjects.isEmpty
+    return _groupedSubjects.isEmpty
         ? const Center(child: Text('추천 과목이 없습니다.'))
         : ListView.builder(
             itemCount: _groupedRecommendedSubjects.keys.length,
@@ -261,7 +392,7 @@ class _TimetableAddState extends State<TimetableAdd> {
                   return ListTile(
                     title: Text(subject.name),
                     subtitle:
-                        Text('${subject.classTime}  ${subject.professor}'),
+                        Text('${subject.classTime}    ${subject.professor}'),
                     onTap: () {
                       showDialog(
                         context: context,
@@ -270,9 +401,7 @@ class _TimetableAddState extends State<TimetableAdd> {
                             title: Text(subject.name),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start, // 왼쪽 정렬
-
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('강의 시간: ${subject.classTime}'),
                                 Text('교수: ${subject.professor}'),
@@ -472,8 +601,7 @@ class _TimetableAddState extends State<TimetableAdd> {
                                         content: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start, // 왼쪽 정렬
-
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text('강의 시간: ${subject.classTime}'),
                                             Text('교수: ${subject.professor}'),
@@ -515,9 +643,7 @@ class _TimetableAddState extends State<TimetableAdd> {
                                 title: Text(subject.name),
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start, // 왼쪽 정렬
-
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('강의 시간: ${subject.classTime}'),
                                     Text('교수: ${subject.professor}'),

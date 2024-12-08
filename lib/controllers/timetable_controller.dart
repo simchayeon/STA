@@ -1,24 +1,33 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:smarttimetable/Screens/main_page.dart';
+import 'package:smarttimetable/models/addmajor_model.dart';
 import 'package:smarttimetable/models/subject_model.dart';
 import 'package:smarttimetable/Services/api_service.dart';
 
 class TimetableController extends ChangeNotifier {
   final String userId;
   List<Subject> subjects = []; // 과목 리스트
+  final List<AddMajor> _subjects = [];
   List<String?> timetable = List.filled(65, null); // 65개의 셀 초기화
   List<Color?> colors = List.filled(65, null); // 과목 색상 리스트
 
   TimetableController(this.userId);
 
   // API에서 과목 목록 가져오기
-  Future<void> fetchSubjects() async {
+  Future<dynamic> fetchSubjects() async {
+    print("디버깅용 출력");
     ApiService apiService = ApiService();
     subjects = await apiService.fetchCurrentSubjects(userId);
     print(
         'Fetched subjects: ${subjects.map((s) => s.name).toList()}'); // 과목 이름 로그
     updateTimetable(); // 시간표 업데이트
+    return subjects;
+  }
+
+  // 과목 목록을 반환하는 함수
+  List<AddMajor> getSubjects() {
+    return _subjects; // _subjects에 저장된 데이터를 반환
   }
 
   // 과목 삭제 메소드
@@ -27,8 +36,8 @@ class TimetableController extends ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
-  void showSubjectDialog(
-      BuildContext context, String courseName, Future<void> Function() onDelete) {
+  void showSubjectDialog(BuildContext context, String courseName,
+      Future<void> Function() onDelete) {
     // 과목 이름으로 Subject 찾기
     Subject? subject = subjects.firstWhere(
       (s) => s.name == courseName,
@@ -66,15 +75,15 @@ class TimetableController extends ChangeNotifier {
                 await onDelete(); // 과목 이름으로 삭제
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 // 상태가 여전히 활성화되어 있는지 확인
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => TimetableScreen(userId: userId),
-                  ),
-                );
-              }
-            },
-          ),
+                if (context.mounted) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => TimetableScreen(userId: userId),
+                    ),
+                  );
+                }
+              },
+            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // 다이얼로그 닫기

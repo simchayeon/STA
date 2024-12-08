@@ -34,8 +34,7 @@ dependencies:
   url_launcher: ^6.0.20
   logging: ^1.0.2
   provider: ^6.0.0
-  assets:
-    - /Users/simchaeyeon/smarttimetable/assets/img/majors.png
+  
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -58,6 +57,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - /Users/simchaeyeon/smarttimetable/assets/img/majors.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
